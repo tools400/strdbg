@@ -1,0 +1,229 @@
+     /* =================================================================== */
+     /*                                                                     */
+     /*  Documentation:                                                     */
+     /*                                                                     */
+     /*  Utility . . . : STRDBG                                             */
+     /*  Object  . . . : A_INSTALL  (PGM)                                   */
+     /*  Source member : A_INSTALL                                          */
+     /*  Source type . : CLLE                                               */
+     /*  Description   : STRDBG - Installer                                 */
+     /*  Author  . . . : Thomas Raddatz   <thomas.raddatz@tools400.de>      */
+     /*  Created . . . :                                                    */
+     /*                                                                     */
+     /* =================================================================== */
+     /*                                                                     */
+     /*  This software is free software, you can redistribute it and/or     */
+     /*  modify it under the terms of the GNU General Public License (GPL)  */
+     /*  as published by the Free Software Foundation.                      */
+     /*                                                                     */
+     /*  See GNU General Public License for details.                        */
+     /*          http://www.opensource.org                                  */
+     /*          http://www.opensource.org/licenses/gpl-license.html        */
+     /*                                                                     */
+     /* =================================================================== */
+     /*  History:                                                           */
+     /*                                                                     */
+     /*  Datum       Name          Änderung                                 */
+     /*  ----------  ------------  ---------------------------------------  */
+     /*                                                                     */
+     /* =================================================================== */
+     /*   >>PRE-COMPILER<<                                                  */
+     /*     >>CRTCMD<<    CRTBNDCL  PGM(QTEMP/&OB) +                        */
+     /*                             SRCFILE(&SL/&SF) SRCMBR(&SM);           */
+     /*     >>IMPORTANT<<                                                   */
+     /*       >>PARM<<    OPTION(*EVENTF);                                  */
+     /*     >>END-IMPORTANT<<                                               */
+     /*     >>EXECUTE<<                                                     */
+     /*     >>CMD<<       CALL   PGM(QTEMP/A_INSTALL) +                     */
+     /*                          PARM('*CURRENT' '&SF' '&LI');              */
+     /*     >>CMD<<       DLTPGM PGM(QTEMP/A_INSTALL);                      */
+     /*   >>END-PRE-COMPILER<<                                              */
+     /* =================================================================== */
+             PGM        PARM(&TGTRLS &SRCFILE &TOLIB)
+
+             DCL        VAR(&TGTRLS   ) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&SRCFILE  ) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&TOLIB    ) TYPE(*CHAR) LEN(10)
+
+             DCL        VAR(&SRCLIB   ) TYPE(*CHAR) LEN(10)
+
+             DCL        VAR(&STRDBGR  ) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&STRDBGR1 ) TYPE(*CHAR) LEN(10)
+
+             CHGVAR     VAR(&SRCLIB) VALUE(&TOLIB   )
+
+     /* -------------------------------- */
+     /*  Set target relase               */
+     /* -------------------------------- */
+             IF         COND(&TGTRLS *EQ 'V5R1M0') THEN(DO)
+                CHGVAR     VAR(&STRDBGR ) VALUE('STRDBGR_51')
+                CHGVAR     VAR(&STRDBGR1) VALUE('STRDBGR151')
+             ENDDO
+             ELSE       CMD(DO)
+                CHGVAR     VAR(&STRDBGR ) VALUE('STRDBGR')
+                CHGVAR     VAR(&STRDBGR1) VALUE('STRDBGR1')
+             ENDDO
+
+     /* -------------------------------- */
+     /*  Delete old objects              */
+     /* -------------------------------- */
+             DLTCMD    CMD(&TOLIB/STRDBG)
+             MONMSG     MSGID(CPF2105)
+
+             DLTPNLGRP PNLGRP(&TOLIB/STRDBGP)
+             MONMSG     MSGID(CPF2105)
+
+             DLTPGM    PGM(&TOLIB/STRDBGR)
+             MONMSG     MSGID(CPF2105)
+
+             DLTPGM    PGM(&TOLIB/STRDBGR1)
+             MONMSG     MSGID(CPF2105)
+
+             DLTMOD    MODULE(&TOLIB/STRDBGR)
+             MONMSG     MSGID(CPF2105)
+
+             DLTMOD    MODULE(&TOLIB/STRDBGR_51)
+             MONMSG     MSGID(CPF2105)
+
+             DLTMOD    MODULE(&TOLIB/STRDBGR1)
+             MONMSG     MSGID(CPF2105)
+
+             DLTMOD    MODULE(&TOLIB/STRDBGR151)
+             MONMSG     MSGID(CPF2105)
+
+             DLTF      FILE(&TOLIB/STRDBGFM)
+             MONMSG     MSGID(CPF2105)
+
+             DLTCMD    CMD(&TOLIB/ENDDBG)
+             MONMSG     MSGID(CPF2105)
+
+             DLTPNLGRP PNLGRP(&TOLIB/ENDDBGP)
+             MONMSG     MSGID(CPF2105)
+
+             DLTPGM    PGM(&TOLIB/ENDDBGR)
+             MONMSG     MSGID(CPF2105)
+
+             DLTMOD    MODULE(&TOLIB/ENDDBGR)
+             MONMSG     MSGID(CPF2105)
+
+     /* -------------------------------- */
+     /*  Create files                    */
+     /* -------------------------------- */
+             CRTDSPF    FILE(&TOLIB/STRDBGFM) +
+                          SRCFILE(&SRCLIB/&SRCFILE) SRCMBR(*FILE)
+             DLTSPLF    FILE(STRDBGFM  ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+     /* -------------------------------- */
+     /*  Create modules                  */
+     /* -------------------------------- */
+             CRTRPGMOD  MODULE(&TOLIB/STRDBGR) +
+                          SRCFILE(&SRCLIB/&SRCFILE) SRCMBR(&STRDBGR) +
+                          TEXT(*SRCMBRTXT) DBGVIEW(*LIST) +
+                          TGTRLS(&TGTRLS) +
+                          TRUNCNBR(*NO)
+             DLTSPLF    FILE(STRDBGR   ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+             CRTRPGMOD MODULE(&TOLIB/STRDBGR1) +
+                          SRCFILE(&SRCLIB/&SRCFILE) SRCMBR(&STRDBGR1) +
+                          TEXT(*SRCMBRTXT) DBGVIEW(*LIST) +
+                          TGTRLS(&TGTRLS) +
+                          TRUNCNBR(*NO)
+             DLTSPLF    FILE(STRDBGR1  ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+             CRTRPGMOD MODULE(&TOLIB/ENDDBGR) +
+                          SRCFILE(&SRCLIB/&SRCFILE) SRCMBR(*MODULE) +
+                          TEXT(*SRCMBRTXT) DBGVIEW(*LIST) +
+                          TGTRLS(&TGTRLS) +
+                          TRUNCNBR(*NO)
+             DLTSPLF    FILE(ENDDBGR   ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+     /* -------------------------------- */
+     /*  Create programs                 */
+     /* -------------------------------- */
+             CRTPGM     PGM(&TOLIB/STRDBGR) +
+                          MODULE(*PGM) +
+                          BNDSRVPGM(&TOLIB/BASICS1) +
+                          BNDDIR(QC2LE) +
+                          ACTGRP(*NEW) +
+                          TGTRLS(&TGTRLS) +
+                          DETAIL(*BASIC)
+             DLTSPLF    FILE(STRDBGR   ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+             CRTPGM     PGM(&TOLIB/STRDBGR1) +
+                          MODULE(*PGM) +
+                          BNDSRVPGM(&TOLIB/BASICS1 +
+                                    &TOLIB/LSTJOB) +
+                          BNDDIR(QC2LE) +
+                          ACTGRP(*CALLER) +
+                          TGTRLS(&TGTRLS) +
+                          DETAIL(*BASIC)
+             DLTSPLF    FILE(STRDBGR1  ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+             CRTPGM     PGM(&TOLIB/ENDDBGR) +
+                          MODULE(*PGM) +
+                          BNDSRVPGM(&TOLIB/BASICS1) +
+                          BNDDIR(QC2LE) +
+                          ACTGRP(*NEW) +
+                          TGTRLS(&TGTRLS) +
+                          DETAIL(*BASIC)
+             DLTSPLF    FILE(ENDDBGR   ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+     /* -------------------------------- */
+     /*  Panel groups                    */
+     /* -------------------------------- */
+             CRTPNLGRP PNLGRP(&TOLIB/STRDBGP) +
+                          SRCFILE(&SRCLIB/&SRCFILE) +
+                          SRCMBR(*PNLGRP)
+             DLTSPLF    FILE(STRDBGP   ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+             CRTPNLGRP PNLGRP(&TOLIB/ENDDBGP) +
+                          SRCFILE(&SRCLIB/&SRCFILE) +
+                          SRCMBR(*PNLGRP)
+             DLTSPLF    FILE(ENDDBGP   ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+     /* -------------------------------- */
+     /*  Create commands                 */
+     /* -------------------------------- */
+             CRTCMD     CMD(&TOLIB/STRDBG) +
+                          SRCFILE(&SRCLIB/&SRCFILE) SRCMBR(*CMD) +
+                          PGM(&TOLIB/STRDBGR)                    +
+                          MODE(*PROD)                            +
+                          ALLOW(*ALL)                            +
+                          MAXPOS(1)                              +
+                          PMTFILE(QDEVELOP/QCPFPMT)              +
+                          HLPSCHIDX(*NONE)                       +
+                          HLPPNLGRP(&TOLIB/STRDBGP)              +
+                          HLPID(STRDBG)
+             DLTSPLF    FILE(STRDBG    ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+             CRTCMD     CMD(&TOLIB/ENDDBG) +
+                          SRCFILE(&SRCLIB/&SRCFILE) SRCMBR(*CMD) +
+                          PGM(&TOLIB/ENDDBGR)                    +
+                          MODE(*DEBUG)                           +
+                          ALLOW(*ALL)                            +
+                          MAXPOS(*NOMAX)                         +
+                          PMTFILE(QDEVELOP/QCPFPMT)              +
+                          HLPSCHIDX(*NONE)                       +
+                          HLPPNLGRP(&TOLIB/ENDDBGP)              +
+                          HLPID(ENDDBG)
+             DLTSPLF    FILE(ENDDBG    ) JOB(*) SPLNBR(*LAST)
+             MONMSG     MSGID(CPF0000)
+
+     /* -------------------------------- */
+     /*  Delete obsolete objects         */
+     /* -------------------------------- */
+             DLTMOD    MODULE(&TOLIB/STRDBGR)
+             DLTMOD    MODULE(&TOLIB/STRDBGR1)
+             DLTMOD    MODULE(&TOLIB/ENDDBGR)
+
+             ENDPGM

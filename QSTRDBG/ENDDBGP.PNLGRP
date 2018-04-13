@@ -1,0 +1,74 @@
+.*=====================================================================*
+.*                                                                     *
+.*  Kurzdokumentation :                                                *
+.*                                                                     *
+.*  Bereich . . . : ENDDBG                                             *
+.*  Objekt  . . . : ENDDBGP                                            *
+.*  Beschreibung  : End Debug with ENDSRVJOB                           *
+.*  Author  . . . : Thomas Raddatz   <thomas.raddatz@tools400.de>      *
+.*  Datum . . . . : 31.10.2005                                         *
+.*                                                                     *
+.*=====================================================================*
+.*                                                                     *
+.*  This software is free software, you can redistribute it and/or     *
+.*  modify it under the terms of the GNU General Public License (GPL)  *
+.*  as published by the Free Software Foundation.                      *
+.*                                                                     *
+.*  See GNU General Public License for details.                        *
+.*          http://www.opensource.org                                  *
+.*          http://www.opensource.org/licenses/gpl-license.html        *
+.*                                                                     *
+.*=====================================================================*
+.*  History:                                                           *
+.*                                                                     *
+.*  Datum       Name          Änderung                                 *
+.*  ----------  ------------  ---------------------------------------  *
+.*                                                                     *
+.*=====================================================================*
+.* >>PRE-COMPILER<<                                                    *
+.*                                                                     *
+.*   >>CRTCMD<< CRTPNLGRP    PNLGRP(&LI/&OB) +                         *
+.*                           SRCFILE(&SL/&SF) +                        *
+.*                           SRCMBR(&SM);                              *
+.*                                                                     *
+.*   >>COMPILE<<                                                       *
+.*   >>END-COMPILE<<                                                   *
+.*                                                                     *
+.*   >>EXECUTE<<                                                       *
+.*                                                                     *
+.* >>END-PRE-COMPILER<<                                                *
+.*=====================================================================*
+:PNLGRP.
+.*
+:HELP name='ENDDBG/ALL'.
+:IMHELP name=ENDDBG.
+:EHELP.
+.*--------------------------------------------------------------------
+.* Hilfetext für den Befehl
+.*--------------------------------------------------------------------
+:HELP NAME='ENDDBG'.
+End Debug (ENDDBG) - Help
+:P.
+The End Debug (ENDDBG) command ends debug mode for a job, removes
+all breakpoints and traces, clears any trace data, and removes all
+programs from debug mode.  This command cannot be entered when one
+or more of the programs in the call stack are stopped at a
+breakpoint.  All breakpoints must be canceled by Resume Breakpoint
+(RSMBKP) or End Request (ENDRQS) commands.  After this command has
+been entered, all database files in production libraries can be
+updated normally.
+:P.
+If ENDDBG is not done before the job has ended, all trace data is
+printed.
+:P.
+:HP2.Restriction::EHP2. This command is valid only in debug mode.  To start
+debug mode, refer to the STRDBG (Start Debug) command.
+:P.
+If you are servicing another job ENDDBG ends the service job
+before it terminates debug mode.
+:P.
+There are no parameters for this command.
+.*
+:EHELP.
+.*
+:EPNLGRP.

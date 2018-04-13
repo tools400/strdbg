@@ -1,0 +1,183 @@
+      *%%TS  SD  20050623  123008  RADDATZ     REL-V5R3M0  5722-WDS
+      *=====================================================================*
+      *                                                                     *
+      *  Kurzdokumentation :                                                *
+      *                                                                     *
+      *  Bereich . . . : STRDBG                                             *
+      *  Objekt  . . . : STRDBGFM                                           *
+      *  Beschreibung  : Start Debug - Select Job                           *
+      *  Author  . . . : Thomas Raddatz   <thomas.raddatz@tools400.de>      *
+      *  Datum . . . . : 22.06.2005                                         *
+      *                                                                     *
+      *=====================================================================*
+      *  History:                                                           *
+      *                                                                     *
+      *  Datum       Name          Änderung                                 *
+      *  ----------  ------------  ---------------------------------------  *
+      *                                                                     *
+      *=====================================================================*
+      * >>PRE-COMPILER<<                                                    *
+      *                                                                     *
+      *   >>CRTCMD<< CRTDSPF      FILE(&LI/&OB) +                           *
+      *                           SRCFILE(&SL/&SF) +                        *
+      *                           SRCMBR(&SM);                              *
+      *                                                                     *
+      *   >>COMPILE<<                                                       *
+      *     >>PARM<< RSTDSP(*YES);                                          *
+      *     >>PARM<< OPTION(*EVENTF);                                       *
+      *   >>END-COMPILE<<                                                   *
+      *                                                                     *
+      *   >>EXECUTE<<                                                       *
+      *                                                                     *
+      * >>END-PRE-COMPILER<<                                                *
+      *=====================================================================*
+      *%%EC
+     A                                      DSPSIZ(24 80 *DS3                  -
+     A                                             27 132 *DS4)
+     A                                      PRINT
+     A                                      INDARA
+      *
+      *----------------------------------------------------*
+     A          R PBSFL                     SFL
+      *%%TS  SD  20050622  133709  RADDATZ     REL-V5R3M0  5722-WDS
+     A  84                                  SFLNXTCHG
+      *
+     A            H_JOB         10   H
+     A            H_USER        10   H
+     A            H_NBR          6   H
+     A            H_TYPE         1   H
+     A            H_STATUS      10   H
+     A            H_ACTJOBST     4   H
+     A            H_DATTIMEN    13   H
+      *
+     A            B_OPTION       1Y 0B  8  4
+     A  85                                  DSPATR(RI)
+     A  86                                  DSPATR(PC)
+     A                                      EDTCDE(Z)
+     A            O_JOB         10   O  8 10
+     A            O_USER        10   O  8 22
+     A            O_NBR          6   O  8 34
+     A            O_TYPE         5   O  8 42
+     A            O_STATUS      16   O  8 52
+     A            O_DATE         8   O  8 70
+      *----------------------------------------------------*
+     A          R PBCTL                     SFLCTL(PBSFL)
+      *%%TS  SD  20050623  123008  RADDATZ     REL-V5R3M0  5722-WDS
+     A  *DS3                                SFLSIZ(0014)
+     A  *DS4                                SFLSIZ(0014)
+     A  *DS3                                SFLPAG(0013)
+     A  *DS4                                SFLPAG(0013)
+     A                                      ROLLUP(91)
+     A                                      ROLLDOWN(92)
+     A                                      CF01
+     A                                      CF02
+     A                                      CF03
+     A                                      CF04
+     A                                      CF05
+     A                                      CF06
+     A                                      CF07
+     A                                      CF08
+     A                                      CF09
+     A                                      CF10
+     A                                      CF11
+     A                                      CF12
+     A                                      CF13
+     A                                      CF14
+     A                                      CF15
+     A                                      CF16
+     A                                      CF17
+     A                                      CF18
+     A                                      CF19
+     A                                      CF20
+     A                                      CF21
+     A                                      CF22
+     A                                      CF23
+     A                                      CF24
+     A  88                                  DSPMOD(*DS4)
+     A                                      OVERLAY
+     A                                      SFLCSRRRN(&SFLCSR)
+     A                                      SFLMODE(&SFLMDE)
+     A  80                                  SFLDSP
+     A  81                                  SFLDSPCTL
+     A  82                                  SFLCLR
+     A  83                                  SFLEND(*MORE)
+     A                                      RTNCSRLOC(&SCNREC &SCNFLD)
+     A            SCNREC        10A  H
+     A            SCNFLD        10A  H
+     A            SFLMDE         1A  H
+     A            SFLCSR         5S 0H
+     A            SFSANR         4S 0H      SFLRCDNBR(CURSOR)
+     A                                  1 31'Select Job to Debug'
+     A                                      COLOR(WHT)
+     A                                  1 72SYSNAME
+     A                                  2 62DATE
+     A                                      EDTCDE(Y)
+     A                                  2 72TIME
+     A                                  3  2'Type option, press Enter.'
+     A                                      COLOR(BLU)
+     A                                  4  4'1=Select'
+     A                                      COLOR(BLU)
+     A                                  4 15'5=Work with'
+     A                                      COLOR(BLU)
+     A                                  4 29'8=Work with spooled files'
+     A                                      COLOR(BLU)
+     A                                  6 70'Entered'
+     A                                      COLOR(WHT)
+     A                                  7  2'Option '
+     A                                      COLOR(WHT)
+     A                                  7 10'Job'
+     A                                      COLOR(WHT)
+     A                                  7 14'       '
+     A                                      COLOR(WHT)
+     A                                  7 22'User'
+     A                                      COLOR(WHT)
+     A                                  7 27'      '
+     A                                      COLOR(WHT)
+     A                                  7 34'Number'
+     A                                      COLOR(WHT)
+     A                                  7 42'Type'
+     A                                      COLOR(WHT)
+     A                                  7 52'-----Status-----'
+     A                                      COLOR(WHT)
+     A                                  7 70'System '
+     A                                      COLOR(WHT)
+      *
+      *----------------------------------------------------*
+     A          R MSGSFL                    SFL
+      *%%TS  SD  19971008  090717  RADDATZ     REL-V3R6M0  5716-PW1
+     A  *DS3                                SFLMSGRCD(24)
+     A  *DS4                                SFLMSGRCD(24)
+     A            S_MSGKY                   SFLMSGKEY
+     A            S_PGMQ                    SFLPGMQ(10)
+      *
+      *----------------------------------------------------*
+     A          R MSGCTL                    SFLCTL(MSGSFL)
+      *%%TS  SD  19971222  171358  RADDATZ     REL-V3R6M0  5716-PW1
+     A                                      KEEP
+     A                                      LOCK
+     A  88                                  DSPMOD(*DS4)
+     A                                      SFLDSP
+     A                                      SFLDSPCTL
+     A                                      SFLINZ
+     A N89                                  SFLEND
+     A  *DS3                                SFLSIZ(0050)
+     A  *DS4                                SFLSIZ(0050)
+     A  *DS3                                SFLPAG(0001)
+     A  *DS4                                SFLPAG(0001)
+     A            S_PGMQ                    SFLPGMQ(10)
+      *----------------------------------------------------*
+      *         R PBBOT
+     A          R PBLEER
+      *%%TS  SD  20050623  113233  RADDATZ     REL-V5R3M0  5722-WDS
+     A                                      OVERLAY
+     A                                  9  4'(No jobs match the specified crite-
+     A                                      ria)'
+      *
+      *----------------------------------------------------*
+     A          R PBBOT
+      *%%TS  SD  20050622  133709  RADDATZ     REL-V5R3M0  5722-WDS
+     A                                      OVERLAY
+     A                                 23  2'F3=Exit'
+     A                                      COLOR(BLU)
+     A                                 23 12'F12=Cancel'
+     A                                      COLOR(BLU)

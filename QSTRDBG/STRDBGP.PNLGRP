@@ -1,0 +1,530 @@
+.*=====================================================================*
+.*                                                                     *
+.*  Kurzdokumentation :                                                *
+.*                                                                     *
+.*  Bereich . . . : STRDBG                                             *
+.*  Objekt  . . . : STRDBGP                                            *
+.*  Beschreibung  : Start Debug with STRSRVJOB                         *
+.*  Author  . . . : Thomas Raddatz   <thomas.raddatz@tools400.de>      *
+.*  Datum . . . . : 31.10.2005                                         *
+.*                                                                     *
+.*=====================================================================*
+.*                                                                     *
+.*  This software is free software, you can redistribute it and/or     *
+.*  modify it under the terms of the GNU General Public License (GPL)  *
+.*  as published by the Free Software Foundation.                      *
+.*                                                                     *
+.*  See GNU General Public License for details.                        *
+.*          http://www.opensource.org                                  *
+.*          http://www.opensource.org/licenses/gpl-license.html        *
+.*                                                                     *
+.*=====================================================================*
+.*  History:                                                           *
+.*                                                                     *
+.*  Datum       Name          Änderung                                 *
+.*  ----------  ------------  ---------------------------------------  *
+.*                                                                     *
+.*=====================================================================*
+.* >>PRE-COMPILER<<                                                    *
+.*                                                                     *
+.*   >>CRTCMD<< CRTPNLGRP    PNLGRP(&LI/&OB) +                         *
+.*                           SRCFILE(&SL/&SF) +                        *
+.*                           SRCMBR(&SM);                              *
+.*                                                                     *
+.*   >>COMPILE<<                                                       *
+.*   >>END-COMPILE<<                                                   *
+.*                                                                     *
+.*   >>EXECUTE<<                                                       *
+.*                                                                     *
+.* >>END-PRE-COMPILER<<                                                *
+.*=====================================================================*
+:PNLGRP.
+.*
+:HELP name='STRDBG/ALL'.
+:IMHELP name=STRDBG.
+:IMHELP name='STRDBG/PGM       '.
+.*:IMHELP name='STRDBG/DSPMODSRC '.
+.*:IMHELP name='STRDBG/SRCDBGPGM '.
+.*:IMHELP name='STRDBG/DFTPGM    '.
+.*:IMHELP name='STRDBG/MAXTRC    '.
+.*:IMHELP name='STRDBG/TRCFULL   '.
+.*:IMHELP name='STRDBG/UNMONPGM  '.
+.*:IMHELP name='STRDBG/UPDPROD   '.
+.*:IMHELP name='STRDBG/OPMSRC    '.
+.*:IMHELP name='STRDBG/SRVPGM    '.
+.*:IMHELP name='STRDBG/CLASS     '.
+.*:IMHELP name='STRDBG/JOB       '.
+.*:IMHELP name='STRDBG/WIDESCN   '.
+:EHELP.
+.*--------------------------------------------------------------------
+.* Hilfetext für den Befehl
+.*--------------------------------------------------------------------
+:HELP NAME='STRDBG'.
+Start Debug (STRDBG) - Help
+:P.
+The Start Debug (STRDBG) command puts a job into debug mode and,
+optionally, adds as many as 20 programs and 20 service programs and
+20 class files to debug mode.  It also specifies certain attributes
+of the debugging session.  For example, it can specify whether
+database files in production libraries can be updated while in debug
+mode.
+:P.
+The graphical system debugger will be launched instead of the
+traditional system debugger if the STRDBG command is issued by a
+user registered for graphical debugging.
+:P.
+Debug can operate in three environments at the same time.  They are
+OPM (Original Program Model), ILE (Integrated Language Environment),
+and JAVA.  Some parameters for this command are applicable for all
+three environments.  Some parameters for this command are applicable
+only for OPM, ILE, or JAVA.  There will be a statement in each
+parameter description stating the environment in which the parameter
+is applicable.
+:P.
+The Change Debug (CHGDBG) command can be used later in the job to
+change the attributes of the debug mode.  Also, OPM programs can be
+added to or removed from the debugging session if they are specified
+in the Add Program (ADDPGM) or Remove Program (RMVPGM) commands.
+OPM programs added with the ADDPGM command will be in the OPM debug
+environment.
+:P.
+When one job is servicing another job, and STRDBG is entered, all
+debug commands are valid for the job being serviced.  If that job is
+held on a job queue, no further debug commands may be entered until
+that job is allowed to run.  When the job starts, an initial
+breakpoint screen is displayed.  From this screen, additional debug
+commands may be entered.  To service another job, see the STRSRVJOB
+(Start Service Job) command.  More information about debugging one
+job from another job is in the CL Programming book, SC41-5721.
+:P.
+:HP2.Restrictions::EHP2.
+:UL.
+:LI.You cannot use this command in debug mode.  To end debug mode,
+refer to the End Debug (ENDDBG) command.
+:LI.You cannot use this command if you are servicing another job,
+and that job is held, suspended, or ending.
+:LI.This command is shipped with public *EXCLUDE authority and the
+QPGMR, QSRV, and QSRVBAS user profiles have private authorities
+to use this command.
+:LI.You must have either *CHANGE authority to the program, or *USE
+authority to the program and *SERVICE special authority.
+:EUL.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort PGM
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/PGM       '.
+Program (PGM) - Help
+:XH3.Program (PGM)
+:P.
+Specifies the qualified names of up to 20 programs to debug in the job.
+Before a program can be debugged, its name must be specified on this
+parameter, in the Add Program (ADDPGM) command, or the Display Module
+Source (DSPMODSRC) command.
+:P.
+This parameter is applicable in both OPM and ILE environments.
+.*
+:PARML.
+:PT.:PK DEF.*NONE:EPK.
+:PD.No program names are specified at the start of the debugging
+session.  The Add Program (ADDPGM) command or the Display Module
+Source (DSPMODSRC) command can be used to add programs later.
+
+:PT.:PV.program-name:EPV.
+:PD.Specify the names of up to 20 programs to debug.  You cannot debug
+two programs that have the same name at the same time in the OPM
+debug environment.  In the ILE debug environment, two programs with
+the same name can be debugged if they are in different libraries.
+
+:PT.:PV.program-type:EPV.
+:PD.Specify what type of program you want to debug.
+
+:EPARML.
+:P.
+The possible library values are:
+.*
+:PARML.
+:PT.:PK DEF.*LIBL:EPK.
+:PD.All libraries in the library list for the current thread are
+searched until the first match is found.
+
+:PT.:PV.*CURLIB:EPV.
+:PD.The current library for the job is used to locate the program.  If
+no library is specified as the current library for the job, QGPL is
+used.
+
+:PT.:PV.library-name:EPV.
+:PD.Specify the library where the program is located.
+
+:EPARML.
+:P.
+The possible program type values are:
+.*
+:PARML.
+:PT.:PK DEF.*AUTO:EPK.
+:PD.The type of the program is automatically determined. The STRDBG
+command searches the first program or service program that matches
+the specified name and starts the debugger for it. Program objects
+are found before service program objects.
+
+:PT.:PV.*PGM:EPV.
+:PD.The specified program name is considered to be a program object.
+
+:PT.:PV.*SRVPGM:EPV.
+:PD.The specified program name is considered to be a service program
+object.
+
+:EPARML.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort PGM
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/DFTPGM    '.
+Default program (DFTPGM) - Help
+:XH3.Default program (DFTPGM)
+:P.
+Specifies the name of the OPM program to use as the
+default program during debug mode.  The program specified
+here is used as the default program for any of the other
+debug commands for which the user specified a value of
+*DFTPGM for the :HP2.Program (PGM):EHP2. parameter.  That is, if a
+default program was previously specified, this parameter
+can change it.
+:P.
+This parameter is applicable only in the OPM environment.
+.*
+:PARML.
+:PT.:PK DEF.*PGM:EPK.
+:PD.The program named on the PGM parameter of this command is to be the
+default program for the job's debugging session.  If there is more
+than one program name specified on the PGM parameter, the first OPM
+program named in the list that is added to the OPM debug environment
+is the default program.  If *NONE is specified on the PGM parameter,
+or is the default, *NONE is also assumed when this value (*PGM) is
+specified.
+
+:PT.:PV.*NONE:EPV.
+:PD.No program is specified as the default program; if a program was
+specified as a default program, it is no longer the default program.
+If the job has no default program, *DFTPGM cannot be specified on
+the PGM parameter of any other debug commands.
+
+:PT.:PV.program-name:EPV.
+:PD.Specify the name of the program to use as the default program during
+debug mode.  The same name (in qualified form) must also be
+specified for the PGM parameter of this command.  You cannot specify
+a bound program on this parameter.
+:SL.
+:LI.:HP2.Note::EHP2.  If OPMSRC(*YES) is specified, the OPM program may be
+added to either the OPM debug environment or the ILE debug
+environment.  If added to the ILE debug environment, then it
+cannot be a default program for the OPM debug environment.
+:ESL.
+
+:EPARML.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort MAXTRC
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/MAXTRC    '.
+Maximum trace statements (MAXTRC) - Help
+:XH3.Maximum trace statements (MAXTRC)
+:P.
+Specifies the maximum number of trace statements that the
+system puts into the job's trace file before either
+stopping tracing or wrapping around (overlaying) on the
+trace file.  When the trace file contains the maximum
+specified, the system performs the actions specified by
+the value supplied for the :HP2.Trace full (TRCFULL):EHP2. parameter.
+:SL.
+:LI.:HP2.Note::EHP2.  Instruction stepping can be performed on a program being
+debugged in an interactive environment by setting the maximum number
+of trace statements to :HP2.1:EHP2. and the value for the TRCFULL parameter to
+*STOPTRC.
+:ESL.
+:P.
+This parameter is applicable only in the OPM environment.
+.*
+:PARML.
+:PT.:PK DEF.200:EPK.
+:PD.Two hundred trace statements can be put into the file before tracing
+is stopped or wrapping occurs.
+
+:PT.:PV.maximum-trace-statements:EPV.
+:PD.Specify the maximum number of trace statements that can be in the
+trace file.
+
+:EPARML.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort TRCFULL
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/TRCFULL   '.
+Trace full (TRCFULL) - Help
+:XH3.Trace full (TRCFULL)
+:P.
+Specifies what happens when the job's trace file is full
+(that is, it contains the maximum number of trace
+statements specified by the value supplied for the :HP2.Maximum
+trace statements (MAXTRC):EHP2. parameter.
+:P.
+This parameter is applicable only in the OPM environment.
+.*
+:PARML.
+:PT.:PK DEF.*STOPTRC:EPK.
+:PD.In a batch environment, tracing stops but the program continues
+processing.  In an interactive environment, control is given to the
+user when a breakpoint occurs.  If the user continues processing, a
+breakpoint occurs before processing each subsequent statement within
+the range of statements being traced, and the trace file is extended
+to contain the new entry.
+
+:PT.:PV.*WRAP:EPV.
+:PD.The trace file is overlaid with new trace statements as they occur,
+wrapping from the beginning of the file.  The program will complete
+processing with no message to indicate that wrapping has occurred.
+The trace file never has more than the maximum specified statements,
+and they are the most recently recorded statements.
+
+:EPARML.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort UPDPROD
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/UPDPROD   '.
+Update production files (UPDPROD) - Help
+:XH3.Update production files (UPDPROD)
+:P.
+Specifies whether or not database files in a production
+library can be opened for updating records, or for adding
+new records, while the job is in debug mode.  If not, the
+files must be copied into a test library before trying to
+run a program that uses the files.
+:P.
+This parameter is applicable in both OPM and ILE environments.
+.*
+:PARML.
+:PT.:PK DEF.*NO:EPK.
+:PD.Database files in production libraries cannot be updated while the
+job is in debug mode.  Database files can be opened for reading
+only.  This protects database files from unwanted updates while a
+program is being debugged.  The exception to this is starting debug
+mode after a production library is already opened.  If this value is
+specified, some commands, which may include function keys, menu
+options, or pulldowns, may not work properly.
+
+:PT.:PV.*YES:EPV.
+:PD.Database files in production libraries can be updated while the job
+is in debug mode.
+
+:EPARML.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort OPMSRC
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/OPMSRC    '.
+OPM source level debug (OPMSRC) - Help
+:XH3.OPM source level debug (OPMSRC)
+:P.
+Specifies that OPM programs are debugged using the system source debug
+support (same as ILE source debug).
+:P.
+This parameter is valid for OPM CL, OPM RPG and OPM COBOL programs that
+were created with OPTION(*SRCDBG) with CRTCLPGM, CRTRPGPGM and CRTCBLPGM
+commands.  Additionally, this parameter is valid for OPM CL, OPM RPG and
+OPM COBOL programs that were created with OPTION(*LSTDBG) with the
+CRTCLPGM, CRTRPGPGM, CRTCBLPGM, CRTSQLRPG, CRTSQLCBL, and CRTRPTRPG
+commands.  If the OPM program is not CL, RPG or COBOL and was not
+compiled with a valid debug option, then this parameter is ignored.
+:P.
+This parameter is applicable in both OPM and ILE environment.
+:P.
+ILE functions will now operate on OPM programs.  For example, source
+level debug.
+.*
+:PARML.
+:PT.:PK DEF.*NO:EPK.
+:PD.OPM debug functions are used for OPM programs.
+
+:PT.:PV.*YES:EPV.
+:PD.ILE debug functions are used for OPM programs.
+
+:EPARML.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort SRVPGM
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/SRVPGM    '.
+Service program (SRVPGM) - Help
+:XH3.Service program (SRVPGM)
+:P.
+Specifies the qualified names of up to 20 service programs
+to debug in the job. Before a service program can be
+debugged, its name must be specified on this parameter or
+the Display Module Source (DSPMODSRC) command.
+:P.
+This parameter is applicable only in the ILE environment.
+.*
+:PARML.
+:PT.:PK DEF.*NONE:EPK.
+:PD.No service program names are specified at the start of the debugging
+session.  The Display Module Source (DSPMODSRC) command can be used
+to add service programs later.
+
+:PT.:PV.service-program-name:EPV.
+:PD.Specify the names of up to 20 service programs to debug.
+
+:EPARML.
+:P.
+The possible library values are:
+.*
+:PARML.
+:PT.:PK DEF.*LIBL:EPK.
+:PD.All libraries in the library list for the current thread are
+searched until the first match is found.
+
+:PT.:PV.*CURLIB:EPV.
+:PD.The current library for the job is used to locate the service program.  If
+no library is specified as the current library for the job, QGPL is
+used.
+
+:PT.:PV.library-name:EPV.
+:PD.Specify the library where the service program is located.
+
+:EPARML.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort CLASS
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/CLASS     '.
+Class file (CLASS) - Help
+:XH3.Class file (CLASS)
+:P.
+Specifies the names of up to 20 class files to debug in
+the job. Before a class file can be debugged, its name
+must be specified on this parameter or the Display Module
+Source (DSPMODSRC) command.
+:P.
+This parameter is applicable only in the ILE environment.
+.*
+:PARML.
+:PT.:PK DEF.*NONE:EPK.
+:PD.No class files are specified at the start of the debugging session.
+The Display Module Source (DSPMODSRC) command can be used to add
+class files later.
+
+:PT.:PV.class-file-name:EPV.
+:PD.Specify the names of up to 20 class files to debug.
+
+:EPARML.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort JOB
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/JOB       '.
+Job name (JOB) - Help
+:XH3.Job name (CLASS)
+:P.
+Specifies the job to be serviced.  If no job number is given, all of the
+jobs currently in the system are searched for the simple job name.  If
+duplicates of the specified name are found, a subfile is shown and
+the desired job must be selected.  The job name
+entered cannot be the name of the job issuing the command.
+:P.
+This parameter is applicable in both OPM and ILE environment.
+:P.
+:HP2.Qualifier 1: Job name:EHP2.
+.*
+:PARML.
+:PT.:PK DEF.*:EPK.
+:PD.The debugger is started for the current job.  No service
+job is started.
+
+:PT.:PV.*ALL:EPV.
+:PD.Specifies that all jobs of the user who is specified for
+the:HP2.User:EHP2. qualifier are applicable for selection.  If
+duplicate jobs are found for the user, a subfile is shown and
+the desired job must be selected.  The number of applicable jobs
+might also be limited by specifying a value for the
+:HP2.Number:EHP2. qualifier.
+
+:PT.:PV.name:EPV.
+:PD.Specify the name of the job.
+:EPARML.
+:P.
+:HP2.Qualifier 2: User:EHP2.
+.*
+:PARML.
+:PT.:PV.*ALL:EPV.
+:PD.Specifies that all jobs of the user are applicable for
+selection.  The number of applicable jobs
+might also be limited by specifying a value for the
+:HP2.Number:EHP2. qualifier.
+
+:PT.:PV.name:EPV.
+:PD.Specify the user name that identifies the user profile under which
+the job was run.
+:EPARML.
+:P.
+:HP2.Qualifier 3: Number:EHP2.
+.*
+:PARML.
+:PT.:PV.*ALL:EPV.
+:PD.Specifies that all jobs are applicable for selection.  The number of
+jobs can be limited by specifying values for the:HP2.User:EHP2. qualifier
+and :HP2.Name:EHP2. qualifier.
+
+:PT.:PV.000000-999999:EPV.
+:PD.Specify the system-assigned job number of the job to be serviced.
+:EPARML.
+.*
+:EHELP.
+.*
+.*--------------------------------------------------------------------
+.* Hilfetext für Schlüsselwort WIDESCN
+.*--------------------------------------------------------------------
+:HELP name='STRDBG/WIDESCN   '.
+Allow wide screen (WIDESCN) - Help
+:XH3.Allow wide screen (WIDESCN)
+:P.
+Specifies the screen mode for the debugger. Normally the debugger
+starts in 24    mode. This parameter allows to start the debugger
+in 27   2 mode.
+:P.
+:PARML.
+:PT.:PK DEF.*PRV:EPK.
+:PD.Start the debugger using the previous screen mode. Actually the
+debugger uses the value of the :HP2.ILE_DEBUGGER_1:EHP2. environment
+variable to determine the screen mode. Since this environment variable
+is usually deleted on signoff, the debugger might start in 24    mode
+after signon although it was last started in 27   2 mode.
+
+:PT.:PV.*NO:EPV.
+:PD.Switches to 24    mode.
+
+:PT.:PV.*YES:EPV.
+:PD.Enables wide screen mode and switches to 27   2 mode.
+
+:EPARML.
+.*
+:EHELP.
+.*
+:EPNLGRP.
