@@ -8,6 +8,8 @@
 /* --------------------------------------------------------------- */
              XMLGENINC  XINCLUDE(*YES)
 
+             XMLGENVRS XSRCFILE(QSTRDBG) XSRCLIB(TOOLS400) XSRCMBR(COPYRIGHT)
+
              XMLGENSET  XVAR(&SRCFILE) XVALUE(QSTRDBG)
 
 /* ---------------------------------- */
@@ -16,6 +18,11 @@
              XMLGENMBR  XMBR(A_INSTALL ) XMBRATR(CLLE ) +
                           XFROMSRCF(QSTRDBG   ) XFROMSRCL(TOOLS400) +
                           XTOSRCF(QSTRDBG   ) XOBJTYPE(*PGM   ) +
+                          XGENCRT(*NO ) XPARAM(*BLANK)
+
+             XMLGENMBR  XMBR(A_README  ) XMBRATR(TXT) +
+                          XFROMSRCF(QSTRDBG   ) XFROMSRCL(TOOLS400) +
+                          XTOSRCF(QSTRDBG   ) XOBJTYPE(*PGM) +
                           XGENCRT(*NO ) XPARAM(*BLANK)
 
              XMLGENMBR  XMBR(COPYRIGHT ) XMBRATR(RPGLE) +
