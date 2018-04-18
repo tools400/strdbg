@@ -51,7 +51,7 @@
       appblddate CDATA #REQUIRED
      >
      ]>
-<upload  appname="STRDBG"  appauthor="Thomas Raddatz"  appblddate=" 2/13/2017">
+<upload  appname="STRDBG"  appauthor="Thomas Raddatz"  appblddate=" 4/18/2018">
 <install_instructions><![CDATA[
      *----------------------------------------------------------------      ------
      *  1. Upload entire XML to your AS/400 to a source file 112 long, into any mbr
@@ -77,6 +77,8 @@
 ]]>  </install_instructions>
 <install_program><![CDATA[
       * /// START OF INSTALL PGM HERE   ************************** ///
+      *---------------------------------------------------------------------------------------
+      * CRTBNDRPG PGM(QTEMP/XMLINST) SRCFILE(ISPHERE/QBUILD) SRCMBR(*PGM)
       *---------------------------------------------------------------------------------------
       * Parse / Install from xml text into source members and objects.
       * Copyright (C) 2001    Craig Rutledge    <craig_rutledge@mohawkind.com>
@@ -442,6 +444,15 @@
       *
       * Set variable &TGTRLS
      C                   callp     setVariable('tgtrls': TgtRls)
+      *
+      * Set variable &XMLFILE
+     C                   callp     setVariable('xmlfile': ParseSrcFile)
+      *
+      * Set variable &XMLLIB
+     C                   callp     setVariable('xmllib': ParseSrcFile)
+      *
+      * Set variable &XMLMBR
+     C                   callp     setVariable('xmlmbr': ParseSrcFile)
       *
       * Override Input file to uploaded text file
      C                   eval      bldexc = 'OVRDBF FILE(XMLINPUT) TOFILE(' +
@@ -841,8 +852,7 @@
       *--------------------------------------------------------------------
      P readElement...
      P                 B
-      *
-     D readElement     PI                        like(bldexc)
+     D                 PI                        like(bldexc)
      D  i_element                     9A   value varying
       *
      D i               S             10I 0 inz
@@ -859,15 +869,13 @@
       *
      C                   Return    value
       *
-     P readElement...
      P                 E
       *--------------------------------------------------------------------
       * Double quotes
       *--------------------------------------------------------------------
      P dblQuotes...
      P                 B
-      *
-     D dblQuotes       PI          2048A         varying
+     D                 PI          2048A         varying
      D  i_string                   2048A   value varying
       *
      D x               S             10I 0         inz
@@ -882,15 +890,12 @@
       *
      C                   Return    string
       *
-     P dblQuotes...
      P                 E
       *---------------------------------------------------------------------------------------------
       *  Get Attribute Data from String
       *---------------------------------------------------------------------------------------------
      P getAttrData...
      P                 B
-      *
-     D getAttrData...
      D                 PI          2000A          varying                       like(string_t)
      D  i_attr                       10a   value
      D  i_string                   2000A   value  varying                       like(string_t)
@@ -926,15 +931,12 @@
       *
      C                   Return    attrData
       *
-     P getAttrData...
      P                 E
       *---------------------------------------------------------------------------------------------
       *  Load condition array
       *---------------------------------------------------------------------------------------------
      P loadConditions...
      P                 B
-      *
-     D loadConditions...
      D                 PI                  dim(32) like(condition)
      D  i_conditions                128A   value
       *
@@ -942,26 +944,42 @@
      D cnd_array       s                   dim(32) inz like(condition)
      D pValue          s               *   inz
      D x               s             10i 0 inz
+     D i               s             10i 0 inz
+     D cnd_value       s            128a   varying
+     D var_name        s             64a   varying
+     D var_value       s             64a   varying
       *-------------------------------------------------------------------*
-     C                   eval      i_conditions = uCase(i_conditions)
-      *
-     C                   eval      pValue = strtok(i_conditions: ';')
-     C                   dow       pValue <> *null
-     C                   eval      x = x + 1
-     C                   eval      cnd_array(x) = %str(pValue)
-     C                   eval      pValue = strtok(*null: ';')
-     C                   enddo
-      *
-     C                   Return    cnd_array
-     P loadConditions...
+      /FREE
+
+         i_conditions = uCase(i_conditions);
+
+         pValue = strtok(i_conditions: ';');
+         dow (pValue <> *null);
+            x = x + 1;
+            cnd_value = %str(pValue);
+            i = %scan('=': cnd_value);
+            if (i = 0);
+               cnd_array(x) = cnd_value;
+            else;
+               var_name = %subst(cnd_value: 1: i-1);
+               if (%subst(var_name: 1: 1) = '&');
+                  var_name = %subst(var_name: 2);
+               endif;
+               var_value = %subst(cnd_value: i+1);
+               setVariable(var_name: var_value);
+               cnd_array(x) = var_value;
+            endif;
+            pValue = strtok(*null: ';');
+         enddo;
+
+         return cnd_array;
+      /END-FREE
      P                 E
       *---------------------------------------------------------------------------------------------
       *  Check for a condition
       *---------------------------------------------------------------------------------------------
      P isCondition...
      P                 B
-      *
-     D isCondition...
      D                 PI              n
      D  i_condList                 2000A   value
       *
@@ -970,6 +988,7 @@
      D pValue          S               *   inz
      D aCondition      S             10a   inz
       *-------------------------------------------------------------------*
+      *
      C                   eval      i_condList = uCase(i_condList)
       *
      C                   if        (i_condList = '*NONE')  or
@@ -996,15 +1015,12 @@
      C                   endif
       *
      C                   Return    isCondition
-     P isCondition...
      P                 E
       *---------------------------------------------------------------------------------------------
       *  Get the current release level of the operation system
       *---------------------------------------------------------------------------------------------
      P getCurrentRelease...
      P                 B
-      *
-     D getCurrentRelease...
      D                 PI            10A
       *
       *  QSZRTVPR API
@@ -1033,18 +1049,17 @@
      D  bytPrv                       10i 0 inz(0)
      D  bytAvl                       10i 0 inz(0)
       *-------------------------------------------------------------------*
+      *
      C                   Callp     QSZRTVPR(prdr0100: %size(prdr0100):
      C                                      'PRDR0100': prdi0100: errCode)
      C                   Return    prdr0100.releaseLvl
-     P getCurrentRelease...
+      *
      P                 E
       *---------------------------------------------------------------------------------------------
       *  Check the release level
       *---------------------------------------------------------------------------------------------
      P isRelease...
      P                 B
-      *
-     D isRelease...
      D                 PI              n
      D  i_os_release                  6A   value
      D  i_release                    10A   value
@@ -1057,6 +1072,7 @@
      D  r_space                4      4a
      D  r_level                5     10a
       *-------------------------------------------------------------------*
+      *
      C                   If        i_release = '*CURRENT'
      C                   Eval      isRelease = *on
      C                   Else
@@ -1083,15 +1099,13 @@
      C                   Endif
       *
      C                   Return    isRelease
-     P isRelease...
+      *
      P                 E
       *---------------------------------------------------------------------------------------------
       *  Replaces the value of a given keyword.
       *---------------------------------------------------------------------------------------------
      P setTargetRelease...
      P                 B
-      *
-     D setTargetRelease...
      D                 PI          2000A          varying
      D  i_keyword                    10A   value  varying
      D  i_string                   2000A   value  varying
@@ -1108,6 +1122,7 @@
      D tmpCmd          S             10A   inz
       *-------------------------------------------------------------------*
       /FREE
+
          tmpKeyword = uCase(%trimR(i_keyword));
          tmpString  = uCase(%trimR(i_string ));
          x = %scan(' ': tmpString);
@@ -1146,49 +1161,47 @@
          string = %replace(tmpKeyword + '(' + %trimR(i_value) + ')'
                            : i_string: x: l);
          Return string;
+
       /END-FREE
-      *
-     P setTargetRelease...
      P                 E
       *---------------------------------------------------------------------------------------------
       *  Store field value.
       *---------------------------------------------------------------------------------------------
      P setVariable...
      P                 B
-      *
-     D setVariable...
      D                 PI
      D  i_fldName                    10A   value  varying
      D  i_value                      64A   value  varying
      D i               s             10I 0 inz
       *-------------------------------------------------------------------*
       /FREE
+
          if (i_fldName = '');
             return;
          endif;
+
          for i = 1 to fld_x;
             if (uCase('&' + %trim(i_fldName)) = uCase(fld_name(fld_x)));
                fld_value(fld_x) = i_value;
                leave;
             endif;
          endfor;
+
          if (fld_x >= %elem(fld_name));
             return;
          endif;
+
          fld_x = fld_x + 1;
          fld_name(fld_x)  = uCase('&' + %trim(i_fldName));
          fld_value(fld_x) = i_value;
+
       /END-FREE
-      *
-     P setVariable...
      P                 E
       *---------------------------------------------------------------------------------------------
       *  get variable name from statement.
       *---------------------------------------------------------------------------------------------
      P getVarName...
      P                 B
-      *
-     D getVarName...
      D                 PI            11a          varying
      D  i_bldexc                           value  like(bldexc)
      D  i_pos                        10i 0 value
@@ -1198,47 +1211,47 @@
      D                                      1234567890_'
       *-------------------------------------------------------------------*
       /FREE
+
          dow (i_pos<=%len(i_bldexc) and
               %check(CHARS:%subst(i_bldexc:i_pos:1))=0);
             name = name+%subst(i_bldexc:i_pos:1);
             i_pos=i_pos+1;
          enddo;
+
          return name;
+
       /END-FREE
       *
-     P getVarName...
      P                 E
       *---------------------------------------------------------------------------------------------
       *  get variable value.
       *---------------------------------------------------------------------------------------------
      P getVarValue...
      P                 B
-      *
-     D getVarValue...
      D                 PI            64a          varying
      D  i_name                       11a   value  varying
      D i               s             10i 0 inz
      D value           s             64a   varying inz('?')
       *-------------------------------------------------------------------*
       /FREE
+
          for i=1 to fld_x;
             if (ucase(fld_name(i))=uCase(i_name));
                value=%trimR(fld_value(i));
                leave;
             endif;
          endfor;
+
          return value;
+
       /END-FREE
       *
-     P getVarValue...
      P                 E
       *---------------------------------------------------------------------------------------------
       *  convert to upper case
       *---------------------------------------------------------------------------------------------
      P uCase...
      P                 B
-      *
-     D uCase...
      D                 PI          2000A          varying
      D  i_string                   2000A   value  varying
      D uCase           s           2000A   inz varying
@@ -1246,11 +1259,12 @@
      D UC              C                   CONST('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
       *-------------------------------------------------------------------*
       /FREE
+
          uCase = %xlate(LC:UC:i_string);
+
          return uCase;
+
       /END-FREE
-      *
-     P uCase...
      P                 E
       * /// END   OF INSTALL PGM HERE   ****************************************** ///
       * /// do not copy past this point ///
@@ -1296,7 +1310,7 @@ srccssid=  "00273">
      /* =================================================================== */
      /*  History:                                                           */
      /*                                                                     */
-     /*  Datum       Name          Ã„nderung                                 */
+     /*  Datum       Name          Änderung                                 */
      /*  ----------  ------------  ---------------------------------------  */
      /*                                                                     */
      /* =================================================================== */
@@ -1503,6 +1517,41 @@ srccssid=  "00273">
 ]]>  </copysrc>
 </mbr>
 <sendmsg  sendmsgid="CPF9897" sendmsgtype = "*STATUS   "><![CDATA[
+Installing A_README  type TXT - in progress.
+]]>  </sendmsg>
+<!-- START OF MEMBER  -->
+<mbr
+mbrname =  "A_README  "
+mbrtype =  "TXT       "
+mbrtext =  "STRDBG Readme                                     "
+srcfile =  "QSTRDBG   "
+srclib  =  "selected  "
+srclen  =  "00092"
+srccssid=  "00273">
+<copysrc><![CDATA[
+STRDBG - A Tools/400 Utility
+----------------------------
+
+STRDBG is utility for starting and ending the 5250 IBM debugger. The
+advantage of the utility over the IBM STRDBG command is, that it
+automatically starts a service job when the user wants to debug
+a different job.
+
+Dependencies: BASICS1, LSTJOB
+
+Compile members with the following PDM option:
+
+   STRPREPRC USESRCFILE(&L/&F) USESRCMBR(&N) OPTION(*EVENTF) CHGOBJD(*NO)
+     LIB(&O) OBJ(&N) SRCLIB(&L) SRCFILE(&F) SRCMBR(&N) USER0(&X)
+     USER1(*LIST) USER2(*FULL)
+
+Members of type MAKPGM or BND are used for linking programs (MAKPGM)
+and service programs (BND).
+
+2018, Thomas Raddatz
+]]>  </copysrc>
+</mbr>
+<sendmsg  sendmsgid="CPF9897" sendmsgtype = "*STATUS   "><![CDATA[
 Installing COPYRIGHT  type RPGLE - in progress.
 ]]>  </sendmsg>
 <!-- START OF MEMBER  -->
@@ -1561,7 +1610,7 @@ srccssid=  "00273">
 /* =============================================================== */
 /*  History:                                                       */
 /*                                                                 */
-/*  Datum       Name          Ã„nderung                             */
+/*  Datum       Name          Änderung                             */
 /*  ----------  ------------  -----------------------------------  */
 /*                                                                 */
 /* =============================================================== */
@@ -1626,7 +1675,7 @@ srccssid=  "00273">
 .*=====================================================================*
 .*  History:                                                           *
 .*                                                                     *
-.*  Datum       Name          Ã„nderung                                 *
+.*  Datum       Name          Änderung                                 *
 .*  ----------  ------------  ---------------------------------------  *
 .*                                                                     *
 .*=====================================================================*
@@ -1649,7 +1698,7 @@ srccssid=  "00273">
 :IMHELP name=ENDDBG.
 :EHELP.
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r den Befehl
+.* Hilfetext für den Befehl
 .*--------------------------------------------------------------------
 :HELP NAME='ENDDBG'.
 End Debug (ENDDBG) - Help
@@ -1705,7 +1754,7 @@ srccssid=  "00273">
       *=====================================================================*
       *  History:                                                           *
       *                                                                     *
-      *  Datum       Name          Ã„nderung                                 *
+      *  Datum       Name          Änderung                                 *
       *  ----------  ------------  ---------------------------------------  *
       *                                                                     *
       *=====================================================================*
@@ -2337,7 +2386,7 @@ srccssid=  "00273">
 /* =============================================================== */
 /*  History:                                                       */
 /*                                                                 */
-/*  Datum       Name          Ã„nderung                             */
+/*  Datum       Name          Änderung                             */
 /*  ----------  ------------  -----------------------------------  */
 /*                                                                 */
 /* =============================================================== */
@@ -2571,7 +2620,7 @@ srccssid=  "00273">
       *=====================================================================*
       *  History:                                                           *
       *                                                                     *
-      *  Datum       Name          Ã„nderung                                 *
+      *  Datum       Name          Änderung                                 *
       *  ----------  ------------  ---------------------------------------  *
       *                                                                     *
       *=====================================================================*
@@ -2778,7 +2827,7 @@ srccssid=  "00273">
 .*=====================================================================*
 .*  History:                                                           *
 .*                                                                     *
-.*  Datum       Name          Ã„nderung                                 *
+.*  Datum       Name          Änderung                                 *
 .*  ----------  ------------  ---------------------------------------  *
 .*                                                                     *
 .*=====================================================================*
@@ -2814,7 +2863,7 @@ srccssid=  "00273">
 .*:IMHELP name='STRDBG/WIDESCN   '.
 :EHELP.
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r den Befehl
+.* Hilfetext für den Befehl
 .*--------------------------------------------------------------------
 :HELP NAME='STRDBG'.
 Start Debug (STRDBG) - Help
@@ -2870,7 +2919,7 @@ authority to the program and *SERVICE special authority.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort PGM
+.* Hilfetext für Schlüsselwort PGM
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/PGM       '.
 Program (PGM) - Help
@@ -2938,7 +2987,7 @@ object.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort PGM
+.* Hilfetext für Schlüsselwort PGM
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/DFTPGM    '.
 Default program (DFTPGM) - Help
@@ -2987,7 +3036,7 @@ cannot be a default program for the OPM debug environment.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort MAXTRC
+.* Hilfetext für Schlüsselwort MAXTRC
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/MAXTRC    '.
 Maximum trace statements (MAXTRC) - Help
@@ -3022,7 +3071,7 @@ trace file.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort TRCFULL
+.* Hilfetext für Schlüsselwort TRCFULL
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/TRCFULL   '.
 Trace full (TRCFULL) - Help
@@ -3056,7 +3105,7 @@ and they are the most recently recorded statements.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort UPDPROD
+.* Hilfetext für Schlüsselwort UPDPROD
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/UPDPROD   '.
 Update production files (UPDPROD) - Help
@@ -3089,7 +3138,7 @@ is in debug mode.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort OPMSRC
+.* Hilfetext für Schlüsselwort OPMSRC
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/OPMSRC    '.
 OPM source level debug (OPMSRC) - Help
@@ -3123,7 +3172,7 @@ level debug.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort SRVPGM
+.* Hilfetext für Schlüsselwort SRVPGM
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/SRVPGM    '.
 Service program (SRVPGM) - Help
@@ -3167,7 +3216,7 @@ used.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort CLASS
+.* Hilfetext für Schlüsselwort CLASS
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/CLASS     '.
 Class file (CLASS) - Help
@@ -3194,7 +3243,7 @@ class files later.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort JOB
+.* Hilfetext für Schlüsselwort JOB
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/JOB       '.
 Job name (JOB) - Help
@@ -3256,7 +3305,7 @@ and :HP2.Name:EHP2. qualifier.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext fÃ¼r SchlÃ¼sselwort WIDESCN
+.* Hilfetext für Schlüsselwort WIDESCN
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/WIDESCN   '.
 Allow wide screen (WIDESCN) - Help
@@ -3313,7 +3362,7 @@ srccssid=  "00273">
       *=====================================================================*
       *  History:                                                           *
       *                                                                     *
-      *  Datum       Name          Ã„nderung                                 *
+      *  Datum       Name          Änderung                                 *
       *  ----------  ------------  ---------------------------------------  *
       *  18.12.2006  Th.Raddatz    Added parameter WIDESCN(*PRV|*NO|*YES).  *
       *                                                                     *
@@ -3365,7 +3414,7 @@ srccssid=  "00273">
       *
       *  Layout von pgmList_t:
       *
-      *  1-2   Int2   Anzahl EintrÃ¤ge von pgmE_t
+      *  1-2   Int2   Anzahl Einträge von pgmE_t
       *  3-x   Int3   Offset zu Eintrag n von pgmE_t (max. 20 Offsets)
       *  *     Char   pgmE_t
       *
@@ -3678,7 +3727,7 @@ srccssid=  "00273">
 
          o_msg = f_newMsg(cMSG_ID_OK);
 
-         // Ãœbertragen Liste der Serviceprogramme in interne Tabelle
+         // Übertragen Liste der Serviceprogramme in interne Tabelle
          clear srvPgmList;
          for x = 1 to i_srvPgmList.numE;
             srvPgmList.numE = srvPgmList.numE + 1;
@@ -4154,7 +4203,7 @@ srccssid=  "00273">
       *=====================================================================*
       *  History:                                                           *
       *                                                                     *
-      *  Datum       Name          Ã„nderung                                 *
+      *  Datum       Name          Änderung                                 *
       *  ----------  ------------  ---------------------------------------  *
       *  18.12.2006  Th.Raddatz    Added parameter WIDESCN(*PRV|*NO|*YES).  *
       *                                                                     *
@@ -4196,7 +4245,7 @@ srccssid=  "00273">
       *
       *  Layout von pgmList_t:
       *
-      *  1-2   Int2   Anzahl EintrÃ¤ge von pgmE_t
+      *  1-2   Int2   Anzahl Einträge von pgmE_t
       *  3-x   Int3   Offset zu Eintrag n von pgmE_t (max. 20 Offsets)
       *  *     Char   pgmE_t
       *
@@ -4502,7 +4551,7 @@ srccssid=  "00273">
       * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       /FREE
 
-         // Ãœbertragen Liste der Serviceprogramme in interne Tabelle
+         // Übertragen Liste der Serviceprogramme in interne Tabelle
          clear srvPgmList;
          for x = 1 to i_srvPgmList.numE;
             srvPgmList.numE = srvPgmList.numE + 1;
@@ -4960,7 +5009,7 @@ srccssid=  "00273">
       *=====================================================================*
       *  History:                                                           *
       *                                                                     *
-      *  Datum       Name          Ã„nderung                                 *
+      *  Datum       Name          Änderung                                 *
       *  ----------  ------------  ---------------------------------------  *
       *  07.12.2006  Th.Raddatz    Added procedure lf_getUniqueJob().       *
       *                                                                     *
@@ -5077,7 +5126,7 @@ srccssid=  "00273">
      D                 PR              N
      D  hJobs                              const  like(lstJob_handle_t)
       *
-      *  LÃ¶schen Subfile
+      *  Löschen Subfile
      D lp_clearSubfile...
      D                 PR
       *
@@ -5090,42 +5139,42 @@ srccssid=  "00273">
      D                 PR              N
      D  o_qJob                                    likeds(qJob_t    )
       *
-      *  Lesen geÃ¤nderten Subfile-Datensatz
+      *  Lesen geänderten Subfile-Datensatz
      D lf_readc...
      D                 PR              N
      D  o_SUBFILE                                 likerec(PBSFL)
       *
-      *  PrÃ¼fen Subfile-Datensatz
+      *  Prüfen Subfile-Datensatz
      D lf_isSubfileRecordValid...
      D                 PR              N
      D  i_SUBFILE_IN                       value  likerec(PBSFL: *INPUT)
       *
-      *  PrÃ¼fen Subfile-Auswahl
+      *  Prüfen Subfile-Auswahl
      D lf_isSubfileOptionValid...
      D                 PR              N
      D  i_option                           value  like(B_OPTION)
       *
-      *  LÃ¶schen Subfile Fehlerbezugszahlen
+      *  Löschen Subfile Fehlerbezugszahlen
      D lf_clearSubfileErrorIndicator...
      D                 PR
       *
-      *  Laden Texte fÃ¼r Subfiledatensatz
+      *  Laden Texte für Subfiledatensatz
      D lf_loadSubfileText...
      D                 PR                         likerec(PBSFL: *OUTPUT)
      D  i_SUBFILE_OUT                             likerec(PBSFL: *OUTPUT)
       *
-      *  Laden Update Image fÃ¼r Subfiledatensatz
+      *  Laden Update Image für Subfiledatensatz
      D lf_loadSubfileOutImage...
      D                 PR                         likerec(PBSFL: *OUTPUT)
      D  i_SUBFILE_IN                              likerec(PBSFL: *INPUT )
       *
-      *  PrÃ¼fen auf eindeutige Jobauswahl und ermitteln Job.
+      *  Prüfen auf eindeutige Jobauswahl und ermitteln Job.
      D lf_getUniqueJob...
      D                 PR              N
      D  hJobs                              const  like(lstJob_handle_t)
      D  q1Job                                     likeds(qJob_t       )
       *
-      *  PrÃ¼fen, ob der Jobstatus gÃ¼ltig ist.
+      *  Prüfen, ob der Jobstatus gültig ist.
      D lf_isJobStatusValid...
      D                 PR              N
      D  jobStatus                    10A   const
@@ -5258,7 +5307,7 @@ srccssid=  "00273">
             // Wenn nur 1 Job den Suchkriterien entspricht, ...
             if lf_getUniqueJob(hJobs: q1Job);
                // ... dann diesen Job direkt als gefunden
-               //     zurÃ¼ck geben.
+               //     zurück geben.
                o_qJob = q1Job;
                // ... fake that ENTER was pressed
                key    = cKEY_ENTER;
@@ -5267,11 +5316,11 @@ srccssid=  "00273">
                leave;
             endif;
 
-            // Ã–ffnen Bildschirmdatei
+            // Öffnen Bildschirmdatei
             g_dspF = %trim(sds.pgmLib) + '/' + 'STRDBGFM';
             open STRDBGFM;
 
-            // FÃ¼llen Subfile
+            // Füllen Subfile
             lf_loadSubfile(hJobs);
 
             // Ausgeben Bildschirm
@@ -5281,7 +5330,7 @@ srccssid=  "00273">
 
                key = lf_showScreen();
 
-               // Verarbeiten Eingabe fÃ¼r ...
+               // Verarbeiten Eingabe für ...
                select;
                // ... F3
                when key = cKEY_F3;
@@ -5316,13 +5365,13 @@ srccssid=  "00273">
 
          o_cmdKey = key;
 
-         // SchlieÃŸen Bildschirmdatei
+         // Schließen Bildschirmdatei
          if %open(STRDBGFM);
             close STRDBGFM;
             g_dspF = '';
          endif;
 
-         // SchlieÃŸen Liste der Jobs
+         // Schließen Liste der Jobs
          if (not HANDLE_isNull(hJobs));
             f_cloJobLst(hJobs);
          endif;
@@ -5361,13 +5410,13 @@ srccssid=  "00273">
       * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       /FREE
 
-         // LÃ¶schen Subfile
+         // Löschen Subfile
          lp_clearSubfile();
 
          // Lesen Jobs
          for x = 1 to f_getNumJobAvl(hJobs);
 
-            // Abrufen ersten/nÃ¤chsten Job
+            // Abrufen ersten/nächsten Job
             if x = 1;
                f_getFirstJob(hJobs: jobl0100);
             else;
@@ -5376,11 +5425,11 @@ srccssid=  "00273">
 
             if lf_isJobStatusValid(jobl0100.status);
 
-               // Abrufen zusÃ¤tzlicher Job-Attribute
+               // Abrufen zusätzlicher Job-Attribute
                jobi0200 = f_rtvJobA(jobl0100.intJobID: 'JOBI0200': msg);
                jobi0400 = f_rtvJobA(jobl0100.intJobID: 'JOBI0400': msg);
 
-               // LÃ¶schen Subfile-Felder
+               // Löschen Subfile-Felder
                clear ds_SUBFILE_OUT;
 
                // Laden versteckte Felder
@@ -5423,7 +5472,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  LÃ¶schen Subfile
+      *  Löschen Subfile
       *===============================================================*
      P lp_clearSubfile...
      P                 B
@@ -5550,7 +5599,7 @@ srccssid=  "00273">
                endif;
             endif;
 
-            // FÃ¼llen Subfiledatensatz fÃ¼r Update
+            // Füllen Subfiledatensatz für Update
             ds_SUBFILE_OUT = lf_loadSubfileOutImage(ds_SUBFILE_IN);
 
             if not isError;
@@ -5564,7 +5613,7 @@ srccssid=  "00273">
             // Beibehalten Cursor-Position
             sflrrn.lastChanged = g_sflRrn;
 
-            // Verlassen Schleife bei Fehler = Satz zur Ã„nderung markiert
+            // Verlassen Schleife bei Fehler = Satz zur Änderung markiert
             if isError;
                if sflRrn.firstError = 0;
                   sflrrn.firstError = g_sflRrn;
@@ -5609,7 +5658,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  Lesen geÃ¤nderten Subfile-Datensatz
+      *  Lesen geänderten Subfile-Datensatz
       *===============================================================*
      P lf_readc...
      P                 B
@@ -5640,7 +5689,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  PrÃ¼fen Subfile-Datensatz
+      *  Prüfen Subfile-Datensatz
       *===============================================================*
      P lf_isSubfileRecordValid...
      P                 B
@@ -5676,7 +5725,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  PrÃ¼fen Subfile-Auswahl
+      *  Prüfen Subfile-Auswahl
       *===============================================================*
      P lf_isSubfileOptionValid...
      P                 B
@@ -5707,7 +5756,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  LÃ¶schen Subfile Fehlerbezugszahlen
+      *  Löschen Subfile Fehlerbezugszahlen
       *===============================================================*
      P lf_clearSubfileErrorIndicator...
      P                 B
@@ -5730,7 +5779,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  Laden Texte fÃ¼r Subfiledatensatz
+      *  Laden Texte für Subfiledatensatz
       *===============================================================*
      P lf_loadSubfileText...
      P                 B
@@ -5798,7 +5847,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  Laden Update Image fÃ¼r Subfiledatensatz
+      *  Laden Update Image für Subfiledatensatz
       *===============================================================*
      P lf_loadSubfileOutImage...
      P                 B
@@ -5837,7 +5886,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  PrÃ¼fen auf eindeutige Jobauswahl und ermitteln Job.
+      *  Prüfen auf eindeutige Jobauswahl und ermitteln Job.
       *===============================================================*
      P lf_getUniqueJob...
      P                 B
@@ -5866,7 +5915,7 @@ srccssid=  "00273">
 
          dow (x <= f_getNumJobAvl(hJobs)) and (numJobs <= 1);
 
-            // Abrufen ersten/nÃ¤chsten Job
+            // Abrufen ersten/nächsten Job
             if x = 1;
                f_getFirstJob(hJobs: jobl0100);
             else;
@@ -5896,7 +5945,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  PrÃ¼fen, ob der Jobstatus gÃ¼ltig ist.
+      *  Prüfen, ob der Jobstatus gültig ist.
       *===============================================================*
      P lf_isJobStatusValid...
      P                 B
@@ -5939,9 +5988,9 @@ srccssid=  "00273">
          S_PGMQ = '*';   // Anzuzeigenden Nachrichtenwartesch
 
          if f_getDisplayMode() = cDISPLAY_MODE_DS3;
-            workstnInd.isWideScreen = cFalse;  // BildschirmgrÃ¶ÃŸe 24x80
+            workstnInd.isWideScreen = cFalse;  // Bildschirmgröße 24x80
          else;
-            workstnInd.isWideScreen = cTrue;   // BildschirmgrÃ¶ÃŸe 27x132
+            workstnInd.isWideScreen = cTrue;   // Bildschirmgröße 27x132
          endif;
 
          return;
@@ -5979,7 +6028,7 @@ srccssid=  "00273">
       *=====================================================================*
       *  History:                                                           *
       *                                                                     *
-      *  Datum       Name          Ã„nderung                                 *
+      *  Datum       Name          Änderung                                 *
       *  ----------  ------------  ---------------------------------------  *
       *  07.12.2006  Th.Raddatz    Added procedure lf_getUniqueJob().       *
       *                                                                     *
@@ -6086,7 +6135,7 @@ srccssid=  "00273">
      D                 PR              N
      D  hJobs                              const  like(lstJob_handle_t)
       *
-      *  LÃ¶schen Subfile
+      *  Löschen Subfile
      D lp_clearSubfile...
      D                 PR
       *
@@ -6099,34 +6148,34 @@ srccssid=  "00273">
      D                 PR              N
      D  o_qJob                                    likeds(qJob_t    )
       *
-      *  Lesen geÃ¤nderten Subfile-Datensatz
+      *  Lesen geänderten Subfile-Datensatz
      D lf_readc...
      D                 PR              N
       *
-      *  PrÃ¼fen Subfile-Datensatz
+      *  Prüfen Subfile-Datensatz
      D lf_isSubfileRecordValid...
      D                 PR              N
       *
-      *  PrÃ¼fen Subfile-Auswahl
+      *  Prüfen Subfile-Auswahl
      D lf_isSubfileOptionValid...
      D                 PR              N
      D  i_option                           value  like(B_OPTION)
       *
-      *  LÃ¶schen Subfile Fehlerbezugszahlen
+      *  Löschen Subfile Fehlerbezugszahlen
      D lf_clearSubfileErrorIndicator...
      D                 PR
       *
-      *  Laden Texte fÃ¼r Subfiledatensatz
+      *  Laden Texte für Subfiledatensatz
      D lf_loadSubfileText...
      D                 PR
       *
-      *  PrÃ¼fen auf eindeutige Jobauswahl und ermitteln Job.
+      *  Prüfen auf eindeutige Jobauswahl und ermitteln Job.
      D lf_getUniqueJob...
      D                 PR              N
      D  hJobs                              const  like(lstJob_handle_t)
      D  q1Job                                     likeds(qJob_t       )
       *
-      *  PrÃ¼fen, ob der Jobstatus gÃ¼ltig ist.
+      *  Prüfen, ob der Jobstatus gültig ist.
      D lf_isJobStatusValid...
      D                 PR              N
      D  jobStatus                    10A   const
@@ -6259,7 +6308,7 @@ srccssid=  "00273">
             // Wenn nur 1 Job den Suchkriterien entspricht, ...
             if lf_getUniqueJob(hJobs: q1Job);
                // ... dann diesen Job direkt als gefunden
-               //     zurÃ¼ck geben.
+               //     zurück geben.
                o_qJob = q1Job;
                // ... fake that ENTER was pressed
                key    = cKEY_ENTER;
@@ -6268,11 +6317,11 @@ srccssid=  "00273">
                leave;
             endif;
 
-            // Ã–ffnen Bildschirmdatei
+            // Öffnen Bildschirmdatei
             g_dspF = %trim(sds.pgmLib) + '/' + 'STRDBGFM';
             open STRDBGFM;
 
-            // FÃ¼llen Subfile
+            // Füllen Subfile
             lf_loadSubfile(hJobs);
 
             // Ausgeben Bildschirm
@@ -6282,7 +6331,7 @@ srccssid=  "00273">
 
                key = lf_showScreen();
 
-               // Verarbeiten Eingabe fÃ¼r ...
+               // Verarbeiten Eingabe für ...
                select;
                // ... F3
                when key = cKEY_F3;
@@ -6317,13 +6366,13 @@ srccssid=  "00273">
 
          o_cmdKey = key;
 
-         // SchlieÃŸen Bildschirmdatei
+         // Schließen Bildschirmdatei
          if %open(STRDBGFM);
             close STRDBGFM;
             g_dspF = '';
          endif;
 
-         // SchlieÃŸen Liste der Jobs
+         // Schließen Liste der Jobs
          if (not HANDLE_isNull(hJobs));
             f_cloJobLst(hJobs);
          endif;
@@ -6361,13 +6410,13 @@ srccssid=  "00273">
       * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       /FREE
 
-         // LÃ¶schen Subfile
+         // Löschen Subfile
          lp_clearSubfile();
 
          // Lesen Jobs
          for x = 1 to f_getNumJobAvl(hJobs);
 
-            // Abrufen ersten/nÃ¤chsten Job
+            // Abrufen ersten/nächsten Job
             if x = 1;
                f_getFirstJob(hJobs: jobl0100);
             else;
@@ -6376,11 +6425,11 @@ srccssid=  "00273">
 
             if lf_isJobStatusValid(jobl0100.status);
 
-               // Abrufen zusÃ¤tzlicher Job-Attribute
+               // Abrufen zusätzlicher Job-Attribute
                jobi0200 = f_rtvJobA(jobl0100.intJobID: 'JOBI0200': msg);
                jobi0400 = f_rtvJobA(jobl0100.intJobID: 'JOBI0400': msg);
 
-               // LÃ¶schen Subfile-Felder
+               // Löschen Subfile-Felder
                clear PBSFL;
 
                // Laden versteckte Felder
@@ -6421,7 +6470,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  LÃ¶schen Subfile
+      *  Löschen Subfile
       *===============================================================*
      P lp_clearSubfile...
      P                 B
@@ -6557,7 +6606,7 @@ srccssid=  "00273">
             // Beibehalten Cursor-Position
             sflrrn.lastChanged = g_sflRrn;
 
-            // Verlassen Schleife bei Fehler = Satz zur Ã„nderung markiert
+            // Verlassen Schleife bei Fehler = Satz zur Änderung markiert
             if isError;
                if sflRrn.firstError = 0;
                   sflrrn.firstError = g_sflRrn;
@@ -6602,7 +6651,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  Lesen geÃ¤nderten Subfile-Datensatz
+      *  Lesen geänderten Subfile-Datensatz
       *===============================================================*
      P lf_readc...
      P                 B
@@ -6632,7 +6681,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  PrÃ¼fen Subfile-Datensatz
+      *  Prüfen Subfile-Datensatz
       *===============================================================*
      P lf_isSubfileRecordValid...
      P                 B
@@ -6667,7 +6716,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  PrÃ¼fen Subfile-Auswahl
+      *  Prüfen Subfile-Auswahl
       *===============================================================*
      P lf_isSubfileOptionValid...
      P                 B
@@ -6698,7 +6747,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  LÃ¶schen Subfile Fehlerbezugszahlen
+      *  Löschen Subfile Fehlerbezugszahlen
       *===============================================================*
      P lf_clearSubfileErrorIndicator...
      P                 B
@@ -6721,7 +6770,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  Laden Texte fÃ¼r Subfiledatensatz
+      *  Laden Texte für Subfiledatensatz
       *===============================================================*
      P lf_loadSubfileText...
      P                 B
@@ -6781,7 +6830,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  PrÃ¼fen auf eindeutige Jobauswahl und ermitteln Job.
+      *  Prüfen auf eindeutige Jobauswahl und ermitteln Job.
       *===============================================================*
      P lf_getUniqueJob...
      P                 B
@@ -6809,7 +6858,7 @@ srccssid=  "00273">
 
          dow (x <= f_getNumJobAvl(hJobs)) and (numJobs <= 1);
 
-            // Abrufen ersten/nÃ¤chsten Job
+            // Abrufen ersten/nächsten Job
             if x = 1;
                f_getFirstJob(hJobs: jobl0100);
             else;
@@ -6839,7 +6888,7 @@ srccssid=  "00273">
      P                 E
       *
       *===============================================================*
-      *  PrÃ¼fen, ob der Jobstatus gÃ¼ltig ist.
+      *  Prüfen, ob der Jobstatus gültig ist.
       *===============================================================*
      P lf_isJobStatusValid...
      P                 B
@@ -6882,9 +6931,9 @@ srccssid=  "00273">
          S_PGMQ = '*';   // Anzuzeigenden Nachrichtenwartesch
 
          if f_getDisplayMode() = cDISPLAY_MODE_DS3;
-            workstnInd.isWideScreen = cFalse;  // BildschirmgrÃ¶ÃŸe 24
+            workstnInd.isWideScreen = cFalse;  // Bildschirmgröße 24
          else;
-            workstnInd.isWideScreen = cTrue;   // BildschirmgrÃ¶ÃŸe 27   2
+            workstnInd.isWideScreen = cTrue;   // Bildschirmgröße 27   2
          endif;
 
          return;
