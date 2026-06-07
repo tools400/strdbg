@@ -1,45 +1,46 @@
-      /IF NOT DEFINED(jobi0200_t)
-      /DEFINE jobi0200_t
-      *===============================================================*
-      *  QUSRJOBI API - JOBI0200                                      *
-      *===============================================================*
-      *
-     D jobi0200_t      DS                  qualified           based(pDummy)
-     D  bytRet                       10I 0
-     D  bytAvl                       10I 0
-     D  job                          10A
-     D  user                         10A
-     D  nbr                           6A
-     D  intJobID                     16A
-     D  status                       10A
-     D  type                          1A
-     D  subType                       1A
-     D  sbsDName                     10A
-     D  runPty                       10I 0
-     D  sysPoolID                    10I 0
-     D  prcTimeUsd                   10I 0
-     D  numAuxIORq                   10I 0
-     D  numIntTact                   10I 0
-     D  rspTimeTot                   10I 0
-     D  fncType                       1A
-     D  fncName                      10A
-     D  actJobSts                     4A
-     D  numDBLckW                    10I 0
-     D  numIntLckW                   10I 0
-     D  numNonDBLckW                 10I 0
-     D  timeDBLckW                   10I 0
-     D  timeIntLckW                  10I 0
-     D  timeNonDBLckW                10I 0
-     D  reserved_01                   1A
-     D  currSysPoolID                10I 0
-     D  thrdCount                    10I 0
-     D  prcUntTmUsd                  20U 0
-     D  numAuxIORqLng                20U 0
-     D  prcUntTmUsdDB                20U 0
-     D  pageFaults                   20U 0
-     D  actJobStsJobEnd...
-     D                                4A
-     D  memPoolName                  10A
-     D  msgRply                       1A
-      *
-      /ENDIF
+**free
+/if NOT defined(jobi0200_t)
+/define jobi0200_t
+//===============================================================*
+//  QUSRJOBI API - JOBI0200                                      *
+//===============================================================*
+
+dcl-ds jobi0200_t qualified template;
+  bytRet          int(10);
+  bytAvl          int(10);
+  job             char(10);
+  user            char(10);
+  nbr             char(6);
+  intJobID        char(16);
+  status          char(10);
+  type            char(1);
+  subType         char(1);
+  sbsDName        char(10);
+  runPty          int(10);
+  sysPoolID       int(10);
+  prcTimeUsd      int(10);
+  numAuxIORq      int(10);
+  numIntTact      int(10);
+  rspTimeTot      int(10);
+  fncType         char(1);
+  fncName         char(10);
+  actJobSts       char(4);
+  numDBLckW       int(10);
+  numIntLckW      int(10);
+  numNonDBLckW    int(10);
+  timeDBLckW      int(10);
+  timeIntLckW     int(10);
+  timeNonDBLckW   int(10);
+  reserved_01     char(1);
+  currSysPoolID   int(10);
+  thrdCount       int(10);
+  prcUntTmUsd     uns(20);
+  numAuxIORqLng   uns(20);
+  prcUntTmUsdDB   uns(20);
+  pageFaults      uns(20);
+  actJobStsJobEnd char(4);
+  memPoolName     char(10);
+  msgRply         char(1);
+end-ds;
+
+/endif

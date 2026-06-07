@@ -1,270 +1,258 @@
-      *=====================================================================*
-      *                                                                     *
-      *  Kurzdokumentation :                                                *
-      *                                                                     *
-      *  Bereich . . . : ENDDBG                                             *
-      *  Objekt  . . . : ENDDBGR                                            *
-      *  Beschreibung  : End Debug Mode with ENDSRVJOB - CPP                *
-      *  Author  . . . : Thomas Raddatz   <thomas.raddatz@tools400.de>      *
-      *  Datum . . . . : 22.06.2005                                         *
-      *                                                                     *
-      *=====================================================================*
-      *  History:                                                           *
-      *                                                                     *
-      *  Datum       Name          Änderung                                 *
-      *  ----------  ------------  ---------------------------------------  *
-      *                                                                     *
-      *=====================================================================*
-      *                                                                     *
-      *  This software is free software, you can redistribute it and/or     *
-      *  modify it under the terms of the GNU General Public License (GPL)  *
-      *  as published by the Free Software Foundation.                      *
-      *                                                                     *
-      *  See GNU General Public License for details.                        *
-      *          http://www.opensource.org                                  *
-      *          http://www.opensource.org/licenses/gpl-license.html        *
-      *                                                                     *
-      *=====================================================================*
-      * >>PRE-COMPILER<<                                                    *
-      *   >>CRTCMD<< CRTRPGMOD    MODULE(&LI/&OB) +                         *
-      *                           SRCFILE(&SL/&SF) +                        *
-      *                           SRCMBR(&SM);                              *
-      *   >>COMPILE<<                                                       *
-      *     >>PARM<< TRUNCNBR(*NO);                                         *
-      *     >>PARM<< DBGVIEW(*LIST);                                        *
-      *     >>PARM<< OPTION(*EVENTF);                                       *
-      *   >>END-COMPILE<<                                                   *
-      *   >>EXECUTE<<                                                       *
-      *   >>CMD<<    CRTPGM       PGM(&LI/&OB) +                            *
-      *                           MODULE(&LI/&OB) +                         *
-      *                           ACTGRP(*NEW) +                            *
-      *                           BNDDIR(QC2LE) +                           *
-      *                           BNDSRVPGM(&LI/BASICS1) +                  *
-      *                           BNDDIR(QC2LE) +                           *
-      *                           DETAIL(*BASIC);                           *
-      * >>END-PRE-COMPILER<<                                                *
-      *=====================================================================*
-      /COPY QSTRDBG,H_SPEC
-      /COPY QSTRDBG,COPYRIGHT
-      *=====================================================================*
-      *
-      * ------------------------------------
-      *  Type definitions
-      * ------------------------------------
-      /COPY QSTRDBG,TYPEDEF
-      *
-      * ------------------------------------
-      *  Constants
-      * ------------------------------------
-      *
-      * ------------------------------------
-      *  External Prototypes
-      * ------------------------------------
-      /COPY QBASICS1,PBASICS1
-      *
-     D QCMDEXC...
-     D                 PR                         extpgm('QCMDEXC')
-     D  i_cmd                     32702A   const  options(*varsize)
-     D  i_length                     15P 5 const
-     D  i_IGC_control                 3A   const  options(*nopass)
-      *
-      *  Process Commands (QCAPCMD) API
-     D QCAPCMD...
-     D                 PR                         extpgm('QCAPCMD')
-     D  i_cmd...
-     D                            32702A   const  options(*varsize)
-     D  i_cmdLength...
-     D                               10I 0 const
-     D  i_optCtrlBlk...
-     D                            32767A   const  options(*varsize)
-     D  i_optCtrlBlkLength...
-     D                               10I 0 const
-     D  i_optCtrlBlkFormat...
-     D                                8A   const
-     D  o_chgCmd...
-     D                            32702A          options(*varsize)
-     D  i_chgCmdLength...
-     D                               10I 0 const
-     D  o_chgCmdLengthAvl...
-     D                               10I 0
-     D  io_errorCode...
-     D                            32767A          options(*varsize)
-      *
-     D QMHRMVPM...
-     D                 PR                         extpgm('QMHRMVPM')
-     D  i_callStkE                   10A   const
-     D  i_callStkC                   10I 0 const
-     D  i_msgKey                      4A   const
-     D  i_msgToRmv                   10A   const
-     D  i_errCode                 65535A   const  options(*varsize)
-     D  i_lenCallStkE                10I 0 const  options(*nopass)
-     D  i_callStkEQ                  20A   const  options(*nopass)
-     D  i_rmvUnhExcp                 10A   const  options(*nopass)
-     D  i_callStkEDT                 10A   const  options(*nopass)
-     D  i_alwDftRpyRj                10A   const  options(*nopass)
-      *
-      * Resend Escape Message (QMHRSNEM) API
-     D QMHRSNEM...
-     D                 PR                         extpgm('QMHRSNEM')
-     D  i_msgKey                      4A   const
-     D  io_ErrCode                32767A          options(*varsize )
-     D  i_callStkE                32767A   const  options(*nopass: *varsize)
-     D  i_lenStkE                    10I 0 const  options(*nopass)
-     D  i_fmtStkE                     8A   const  options(*nopass)
-     D  i_frmStkEAdr                 16A   const  options(*nopass)
-     D  i_frmStkECnt                 10I 0 const  options(*nopass)
-      *
-      * ------------------------------------
-      *  Prototypes
-      * ------------------------------------
-      /COPY QSTRDBG,PENDDBGR
-      *
-     D p_main...
-     D                 PR
-      *
-      * ------------------------------------
-      *  Global fields
-      * ------------------------------------
-     D g_pssr          DS                  qualified
-     D  isActive                       N   inz(cFalse)
-      *
-      * ------------------------------------
-      *  Program Status Information
-      * ------------------------------------
-     D sds            SDS                  qualified
-     D  pgmName                1     10A
-     D  statusCode            11     15S 0
-     D  statusCodePrv         16     20S 0
-     D  srcLineNbr            21     28A
-     D  routine               29     36A
-     D  numParms              37     39S 0
-     D  msgID                 40     46A
-     D   excType                      3A   overlay(msgID)
-     D   excNbr                       4A   overlay(msgID: *next)
-     D  reserved_1            47     50A
-     D  msgWorkArea           51     80A
-     D  pgmLib                81     90A
-     D  msgText               91    170A
-     D  excpID               171    174A
-     D  lastFileUsed         175    184A
-     D  reserved_2           185    190A
-     D  jobDate              191    198A
-     D  century              199    200S 0
-     D  lastFileUsed8        201    208A
-     D  lastFileStat         209    243A
-     D  job                  244    253A
-     D  user                 254    263A
-     D  nbr                  264    269A
-     D  pgmDate              270    275S 0
-     D  date                 276    281S 0
-     D  time                 282    287S 0
-     D  pgmCrtDate           288    293A
-     D  pgmCrtTime           294    299A
-     D  compilerLvl          300    303A
-     D  srcFile              304    313A
-     D  srcLib               314    323A
-     D  srcMbr               324    333A
-     D  prcOfPgm             334    343A
-     D  prcOfMod             344    353A
-     D  Reserved             354    429A
-     D  curUsrPrf            358    367A
-      *
-      *===============================================================*
-      *  Program Entry Point
-      *===============================================================*
-     D ENDDBGR...
-     D                 PI
-      *
-     D errCode         DS                  likeds(errCode_t ) inz
-      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      /FREE
+**free
+//=====================================================================*
+//                                                                     *
+//  Kurzdokumentation :                                                *
+//                                                                     *
+//  Bereich . . . : ENDDBG                                             *
+//  Objekt  . . . : ENDDBGR                                            *
+//  Beschreibung  : End Debug Mode with ENDSRVJOB - CPP                *
+//  Author  . . . : Thomas Raddatz   <thomas.raddatz@tools400.de>      *
+//  Datum . . . . : 22.06.2005                                         *
+//                                                                     *
+//=====================================================================*
+//  History:                                                           *
+//                                                                     *
+//  Datum       Name          Ã„nderung                                 *
+//  ----------  ------------  ---------------------------------------  *
+//                                                                     *
+//=====================================================================*
+//                                                                     *
+//  This software is free software, you can redistribute it and/or     *
+//  modify it under the terms of the GNU General Public License (GPL)  *
+//  as published by the Free Software Foundation.                      *
+//                                                                     *
+//  See GNU General Public License for details.                        *
+//          http://www.opensource.org                                  *
+//          http://www.opensource.org/licenses/gpl-license.html        *
+//                                                                     *
+//=====================================================================*
+// >>PRE-COMPILER<<                                                    *
+//   >>CRTCMD<< CRTRPGMOD    MODULE(&LI/&OB) +                         *
+//                           SRCFILE(&SL/&SF) +                        *
+//                           SRCMBR(&SM);                              *
+//   >>COMPILE<<                                                       *
+//     >>PARM<< TRUNCNBR(*NO);                                         *
+//     >>PARM<< DBGVIEW(*LIST);                                        *
+//     >>PARM<< OPTION(*EVENTF);                                       *
+//   >>END-COMPILE<<                                                   *
+//   >>EXECUTE<<                                                       *
+//   >>CMD<<    CRTPGM       PGM(&LI/&OB) +                            *
+//                           MODULE(&LI/&OB) +                         *
+//                           ACTGRP(*NEW) +                            *
+//                           BNDDIR(QC2LE) +                           *
+//                           BNDSRVPGM(*LIBL/BASICS1) +                *
+//                           BNDDIR(QC2LE) +                           *
+//                           DETAIL(*BASIC);                           *
+// >>END-PRE-COMPILER<<                                                *
+//=====================================================================*
+/copy QSTRDBG,H_SPEC
+/copy QSTRDBG,COPYRIGHT
+//=====================================================================*
+//
+// ------------------------------------
+//  Type definitions
+// ------------------------------------
+/copy QSTRDBG,TYPEDEF
 
-         p_main();
+// ------------------------------------
+//  Constants
+// ------------------------------------
+//
+// ------------------------------------
+//  External Prototypes
+// ------------------------------------
+/copy QBASICS1,PBASICS1
 
-         *inlr = *on;
+dcl-pr QCMDEXC extpgm('QCMDEXC');
+  i_cmd         char(32702) options(*varsize) const;
+  i_length      packed(15: 5) const;
+  i_IGC_control char(3) options(*nopass) const;
+end-pr;
 
-         return;
+//  Process Commands (QCAPCMD) API
+dcl-pr QCAPCMD extpgm('QCAPCMD');
+  i_cmd              char(32702) options(*varsize) const;
+  i_cmdLength        int(10) const;
+  i_optCtrlBlk       char(32767) options(*varsize) const;
+  i_optCtrlBlkLength int(10) const;
+  i_optCtrlBlkFormat char(8) const;
+  o_chgCmd           char(32702) options(*varsize);
+  i_chgCmdLength     int(10) const;
+  o_chgCmdLengthAvl  int(10);
+  io_errorCode       char(32767) options(*varsize);
+end-pr;
 
-         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-         //   Error handle
-         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+dcl-pr QMHRMVPM extpgm('QMHRMVPM');
+  i_callStkE    char(10) const;
+  i_callStkC    int(10) const;
+  i_msgKey      char(4) const;
+  i_msgToRmv    char(10) const;
+  i_errCode     char(65535) options(*varsize) const;
+  i_lenCallStkE int(10) options(*nopass) const;
+  i_callStkEQ   char(20) options(*nopass) const;
+  i_rmvUnhExcp  char(10) options(*nopass) const;
+  i_callStkEDT  char(10) options(*nopass) const;
+  i_alwDftRpyRj char(10) options(*nopass) const;
+end-pr;
 
-         begsr   *PSSR;
+// Resend Escape Message (QMHRSNEM) API
+dcl-pr QMHRSNEM extpgm('QMHRSNEM');
+  i_msgKey     char(4) const;
+  io_ErrCode   char(32767) options(*varsize);
+  i_callStkE   char(32767) options(*nopass: *varsize) const;
+  i_lenStkE    int(10) options(*nopass) const;
+  i_fmtStkE    char(8) options(*nopass) const;
+  i_frmStkEAdr char(16) options(*nopass) const;
+  i_frmStkECnt int(10) options(*nopass) const;
+end-pr;
 
-            if not g_pssr.isActive;
-               g_pssr.isActive = cTrue;
+// ------------------------------------
+//  Prototypes
+// ------------------------------------
+/copy QSTRDBG,PENDDBGR
 
-               errCode = f_newApiErrCode(cTrue);
-               QMHRSNEM('': errCode);
+dcl-pr p_main;
+end-pr;
 
-            endif;
+// ------------------------------------
+//  Global fields
+// ------------------------------------
+dcl-ds g_pssr qualified;
+  isActive ind inz(cFalse);
+end-ds;
 
-         endsr   '*CANCL';
+// ------------------------------------
+//  Program Status Information
+// ------------------------------------
+dcl-ds sds qualified psds;
+  pgmName       char(10) pos(1);
+  statusCode    zoned(5) pos(11);
+  statusCodePrv zoned(5) pos(16);
+  srcLineNbr    char(8) pos(21);
+  routine       char(8) pos(29);
+  numParms      zoned(3) pos(37);
+  msgID         char(7) pos(40);
+  excType       char(3) overlay(msgID);
+  excNbr        char(4) overlay(msgID: *next);
+  reserved_1    char(4) pos(47);
+  msgWorkArea   char(30) pos(51);
+  pgmLib        char(10) pos(81);
+  msgText       char(80) pos(91);
+  excpID        char(4) pos(171);
+  lastFileUsed  char(10) pos(175);
+  reserved_2    char(6) pos(185);
+  jobDate       char(8) pos(191);
+  century       zoned(2) pos(199);
+  lastFileUsed8 char(8) pos(201);
+  lastFileStat  char(35) pos(209);
+  job           char(10) pos(244);
+  user          char(10) pos(254);
+  nbr           char(6) pos(264);
+  pgmDate       zoned(6) pos(270);
+  date          zoned(6) pos(276);
+  time          zoned(6) pos(282);
+  pgmCrtDate    char(6) pos(288);
+  pgmCrtTime    char(6) pos(294);
+  compilerLvl   char(4) pos(300);
+  srcFile       char(10) pos(304);
+  srcLib        char(10) pos(314);
+  srcMbr        char(10) pos(324);
+  prcOfPgm      char(10) pos(334);
+  prcOfMod      char(10) pos(344);
+  Reserved      char(76) pos(354);
+  curUsrPrf     char(10) pos(358);
+end-ds;
 
-      /END-FREE
-      *
-      *===============================================================*
-      *  Haupsteuerung
-      *===============================================================*
-     P p_main...
-     P                 B
-      *
-     D p_main...
-     D                 PI
-      *
-      *  Schleifensteuerung
-     D isDone          S               N   inz(cFalse)
-     D isError         S               N   inz(cFalse)
-      *
-      *  Hilfsfelder
-     D cmd             S          32702A   varying inz
-      *
-      *  Helper fields QCAPCMD
-     D optCtrlBlk      DS                  qualified
-     D  typeCmdPrc             1      4I 0 inz(0)
-     D  DBCS_data              5      5A   inz('0')
-     D  prmtAction             6      6A   inz('0')
-     D  cmdStrSyntax           7      7A   inz('0')
-     D  msgRtvKey              8     11A   inz(*BLANKS)
-     D  res_01                12     20A   inz(*ALLx'00')
-      *
-     D chgCmd          S            128A   inz
-     D chgCmdBytAvl    S             10I 0 inz
-     D errCode         DS                  likeds(errCode_t ) inz
-      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      /FREE
+//===============================================================*
+//  Program Entry Point
+//===============================================================*
+dcl-pi ENDDBGR;
+end-pi;
 
-         // Tue es , bis wir fertig sind oder ein Fehler auftritt:
-         dou isDone or isError;
+dcl-ds errCode likeds(errCode_t) inz;
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-            // Produce ENDDBG command ...
-            cmd = 'QSYS/ENDDBG';
+p_main();
 
-            // Process ENDDBG command
-            QCMDEXC(cmd: %len(cmd));
+*inlr = *on;
 
-            // Produce ENDSRVJOB command ...
-            cmd = 'ENDSRVJOB';
+return;
 
-            // Process ENDSRVJOB command
-            reset optCtrlBlk;
-            errCode = f_newApiErrCode(cTrue);
-            QCAPCMD(cmd: %len(cmd): optCtrlBlk: %size(optCtrlBlk): 'CPOP0100':
-                    chgCmd: 0: chgCmdBytAvl: errCode);
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+//   Error handle
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-            if errCode.bytAvl <> 0;
-               errCode = f_newApiErrCode(cTrue);
-               QMHRMVPM('*': 0: '': '*ALL': errCode);
-            endif;
+begsr   *PSSR;
 
-            // Everything is done
-            isDone = cTrue;
-         enddo;
+  if not g_pssr.isActive;
+    g_pssr.isActive = cTrue;
 
-         return;
+    errCode = f_newApiErrCode(cTrue);
+    QMHRSNEM('': errCode);
 
-      /END-FREE
-      *
-     P p_main...
-     P                 E
-      *
+  endif;
+
+endsr   '*CANCL';
+
+
+//===============================================================*
+//  Haupsteuerung
+//===============================================================*
+dcl-proc p_main;
+  dcl-pi *n;
+  end-pi;
+
+  //  Schleifensteuerung
+  dcl-s isDone ind inz(cFalse);
+  dcl-s isError ind inz(cFalse);
+
+  //  Hilfsfelder
+  dcl-s cmd varchar(32702) inz;
+
+  //  Helper fields QCAPCMD
+  dcl-ds optCtrlBlk qualified;
+    typeCmdPrc   int(10) inz(0);
+    DBCS_data    char(1) inz('0');
+    prmtAction   char(1) inz('0');
+    cmdStrSyntax char(1) inz('0');
+    msgRtvKey    char(4) inz(*blanks);
+    res_01       char(9) inz(*ALLx'00');
+  end-ds;
+
+  dcl-s chgCmd char(128) inz;
+  dcl-s chgCmdBytAvl int(10) inz;
+  dcl-ds errCode likeds(errCode_t) inz;
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  // Tue es , bis wir fertig sind oder ein Fehler auftritt:
+  dou isDone or isError;
+
+    // Produce ENDDBG command ...
+    cmd = 'QSYS/ENDDBG';
+
+    // Process ENDDBG command
+    QCMDEXC(cmd: %len(cmd));
+
+    // Produce ENDSRVJOB command ...
+    cmd = 'ENDSRVJOB';
+
+    // Process ENDSRVJOB command
+    reset optCtrlBlk;
+    errCode = f_newApiErrCode(cTrue);
+    QCAPCMD(cmd: %len(cmd): optCtrlBlk: %size(optCtrlBlk): 'CPOP0100':
+            chgCmd: 0: chgCmdBytAvl: errCode);
+
+    if errCode.bytAvl <> 0;
+      errCode = f_newApiErrCode(cTrue);
+      QMHRMVPM('*': 0: '': '*ALL': errCode);
+    endif;
+
+    // Everything is done
+    isDone = cTrue;
+  enddo;
+
+  return;
+
+
+end-proc;
+

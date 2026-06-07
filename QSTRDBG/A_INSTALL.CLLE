@@ -23,7 +23,7 @@
      /* =================================================================== */
      /*  History:                                                           */
      /*                                                                     */
-     /*  Datum       Name          Änderung                                 */
+     /*  Datum       Name          Ã„nderung                                 */
      /*  ----------  ------------  ---------------------------------------  */
      /*                                                                     */
      /* =================================================================== */
@@ -146,7 +146,7 @@
      /* -------------------------------- */
              CRTPGM     PGM(&TOLIB/STRDBGR) +
                           MODULE(*PGM) +
-                          BNDSRVPGM(&TOLIB/BASICS1) +
+                          BNDSRVPGM(*LIBL/BASICS1) +
                           BNDDIR(QC2LE) +
                           ACTGRP(*NEW) +
                           TGTRLS(&TGTRLS) +
@@ -156,8 +156,8 @@
 
              CRTPGM     PGM(&TOLIB/STRDBGR1) +
                           MODULE(*PGM) +
-                          BNDSRVPGM(&TOLIB/BASICS1 +
-                                    &TOLIB/LSTJOB) +
+                          BNDSRVPGM(*LIBL/BASICS1 +
+                                    *LIBL/LSTJOB) +
                           BNDDIR(QC2LE) +
                           ACTGRP(*CALLER) +
                           TGTRLS(&TGTRLS) +
@@ -167,7 +167,7 @@
 
              CRTPGM     PGM(&TOLIB/ENDDBGR) +
                           MODULE(*PGM) +
-                          BNDSRVPGM(&TOLIB/BASICS1) +
+                          BNDSRVPGM(*LIBL/BASICS1) +
                           BNDDIR(QC2LE) +
                           ACTGRP(*NEW) +
                           TGTRLS(&TGTRLS) +

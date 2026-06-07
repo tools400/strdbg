@@ -1,10 +1,10 @@
-     H DEBUG
-     H OPTION(*SRCSTMT : *NODEBUGIO)
-      /IF NOT DEFINED(NO_DECEDIT)
-     H DECEDIT('0,')
-      /ENDIF
-     H DATEDIT(*DMY.)
-     H DATFMT(*ISO )
-     H TIMFMT(*ISO )
-     H EXPROPTS(*RESDECPOS)
-     H EXTBININT(*YES)
+**free
+ctl-opt debug option(*srcstmt: *nodebugio);
+/if NOT defined(NO_DECEDIT)
+ctl-opt decedit('0,');
+/endif
+ctl-opt datedit(*DMY.);
+ctl-opt datfmt(*iso);
+ctl-opt timfmt(*iso);
+ctl-opt expropts(*resdecpos);
+ctl-opt extbinint(*yes);

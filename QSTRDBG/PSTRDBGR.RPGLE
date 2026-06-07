@@ -1,20 +1,21 @@
-      /IF NOT DEFINED(STRDBGR)
-      /DEFINE STRDBGR
-      *
-     D STRDBGR...
-     D                 PR                         extpgm('STRDBGR')
-     D  gi_pgmList                         const  likeds(pgmList_t )
-     D  gi_dspmodsrc                  1A   const
-     D  gi_srcdbgpgm                       const  likeds(qObj_t    )
-     D  gi_dftpgm                    10A   const
-     D  gi_maxtrc                     5I 0 const
-     D  gi_trcfull                    1A   const
-     D  gi_unmonpgm                        const  likeds(qObj_t    )
-     D  gi_updprod                    1A   const
-     D  gi_opmsrc                     1A   const
-     D  gi_srvpgm                          const  likeds(pgm_t     )
-     D  gi_class                           const  likeds(class_t   )
-     D  gi_qJob                            const  likeds(qJob_t    )
-     D  gi_alwWideScn                 1A   const
-      *
-      /ENDIF
+**free
+/if NOT defined(STRDBGR)
+/define STRDBGR
+
+dcl-pr STRDBGR extpgm('STRDBGR');
+  gi_pgmList    likeds(pgmList_t) const;
+  gi_dspmodsrc  char(1) const;
+  gi_srcdbgpgm  likeds(qObj_t) const;
+  gi_dftpgm     char(10) const;
+  gi_maxtrc     int(5) const;
+  gi_trcfull    char(1) const;
+  gi_unmonpgm   likeds(qObj_t) const;
+  gi_updprod    char(1) const;
+  gi_opmsrc     char(1) const;
+  gi_srvpgm     likeds(pgm_t) const;
+  gi_class      likeds(class_t) const;
+  gi_qJob       likeds(qJob_t) const;
+  gi_alwWideScn char(1) const;
+end-pr;
+
+/endif

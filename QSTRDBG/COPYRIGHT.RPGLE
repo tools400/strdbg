@@ -1,8 +1,7 @@
-      /if not defined(COPYRIGHT_DSPEC)
-     H COPYRIGHT('V1.8.1 - 09.02.2017 - mailto:thomas.raddatz@tools400.de')
-      /eof
-      /endif
-     D STRDBG_VERSION...
-     D                 C                   '1.8.1'
-     D STRDBG_DATE...
-     D                 C                   '09.02.2017'
+**free
+/if not defined(COPYRIGHT_DSPEC)
+ctl-opt copyright('V1.9 - 07.06.2026 - mailto: thomas.raddatz@tools400.de');
+/eof
+/endif
+dcl-c STRDBG_VERSION '1.9';
+dcl-c STRDBG_DATE '07.06.2026';

@@ -1,42 +1,43 @@
-      /IF NOT DEFINED(TYPEDEF)
-      /DEFINE TYPEDEF
-      *
-      * ------------------------------------
-      *  Type definitions
-      * ------------------------------------
-     D keyPressed_t    S              1A   based(pDummy)
-      *
-      * ------------------------------------
-      *  Constants
-      * ------------------------------------
-     D cEOF            C                   const(*ON )
-      *
-      *  Konstanten: AID-Bytes
-     D cKEY_F1         C                   const(X'31')
-     D cKEY_F2         C                   const(X'32')
-     D cKEY_F3         C                   const(X'33')
-     D cKEY_F4         C                   const(X'34')
-     D cKEY_F5         C                   const(X'35')
-     D cKEY_F6         C                   const(X'36')
-     D cKEY_F7         C                   const(X'37')
-     D cKEY_F8         C                   const(X'38')
-     D cKEY_F9         C                   const(X'39')
-     D cKEY_F10        C                   const(X'3A')
-     D cKEY_F11        C                   const(X'3B')
-     D cKEY_F12        C                   const(X'3C')
-     D cKEY_F13        C                   const(X'B1')
-     D cKEY_F14        C                   const(X'B2')
-     D cKEY_F15        C                   const(X'B3')
-     D cKEY_F16        C                   const(X'B4')
-     D cKEY_F17        C                   const(X'B5')
-     D cKEY_F18        C                   const(X'B6')
-     D cKEY_F19        C                   const(X'B7')
-     D cKEY_F20        C                   const(X'B8')
-     D cKEY_F21        C                   const(X'B9')
-     D cKEY_F22        C                   const(X'BA')
-     D cKEY_F23        C                   const(X'BB')
-     D cKEY_F24        C                   const(X'BC')
-      *
-     D cKEY_ENTER      C                   const(X'F1')
-      *
-      /ENDIF
+**free
+/if NOT defined(TYPEDEF)
+/define TYPEDEF
+
+// ------------------------------------
+//  Type definitions
+// ------------------------------------
+dcl-s keyPressed_t char(1) template;
+
+// ------------------------------------
+//  Constants
+// ------------------------------------
+dcl-c cEOF *on;
+
+//  Konstanten: AID-Bytes
+dcl-c cKEY_F1 X'31';
+dcl-c cKEY_F2 X'32';
+dcl-c cKEY_F3 X'33';
+dcl-c cKEY_F4 X'34';
+dcl-c cKEY_F5 X'35';
+dcl-c cKEY_F6 X'36';
+dcl-c cKEY_F7 X'37';
+dcl-c cKEY_F8 X'38';
+dcl-c cKEY_F9 X'39';
+dcl-c cKEY_F10 X'3A';
+dcl-c cKEY_F11 X'3B';
+dcl-c cKEY_F12 X'3C';
+dcl-c cKEY_F13 X'B1';
+dcl-c cKEY_F14 X'B2';
+dcl-c cKEY_F15 X'B3';
+dcl-c cKEY_F16 X'B4';
+dcl-c cKEY_F17 X'B5';
+dcl-c cKEY_F18 X'B6';
+dcl-c cKEY_F19 X'B7';
+dcl-c cKEY_F20 X'B8';
+dcl-c cKEY_F21 X'B9';
+dcl-c cKEY_F22 X'BA';
+dcl-c cKEY_F23 X'BB';
+dcl-c cKEY_F24 X'BC';
+
+dcl-c cKEY_ENTER X'F1';
+
+/endif

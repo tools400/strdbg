@@ -1,18 +1,18 @@
-      /IF NOT DEFINED(STRDBGR1)
-      /DEFINE STRDBGR1
-      *
-      /COPY QLSTJOB,PLSTJOB
-      *
-      /IF DEFINED(PI_LITERAL)
-     D STRDBGR1...
-     D                 PR                         extpgm('STRDBGR1')
-      /ELSE
-     D g_pgm_strdbgr1  S             21A   inz
-     D STRDBGR1...
-     D                 PR                         extpgm(g_pgm_strdbgr1)
-      /ENDIF
-     D  gi_qJob                            const  likeds(qJob_t    )
-     D  go_qJob                                   likeds(qJob_t    )
-     D  go_cmdKey                                 like(keyPressed_t)
-      *
-      /ENDIF
+**free
+/if NOT defined(STRDBGR1)
+/define STRDBGR1
+
+/copy QLSTJOB,PLSTJOB
+
+/if defined(PI_LITERAL)
+dcl-pr STRDBGR1 extpgm('STRDBGR1');
+/else
+  dcl-s g_pgm_strdbgr1 char(21) inz;
+dcl-pr STRDBGR1 extpgm(g_pgm_strdbgr1);
+/endif
+  gi_qJob   likeds(qJob_t) const;
+  go_qJob   likeds(qJob_t);
+  go_cmdKey like(keyPressed_t);
+end-pr;
+
+/endif

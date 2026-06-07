@@ -1,7 +1,8 @@
-      /IF NOT DEFINED(ENDDBGR)
-      /DEFINE ENDDBGR
-      *
-     D ENDDBGR...
-     D                 PR                         extpgm('ENDDBGR')
-      *
-      /ENDIF
+**free
+/if NOT defined(ENDDBGR)
+/define ENDDBGR
+
+dcl-pr ENDDBGR extpgm('ENDDBGR');
+end-pr;
+
+/endif

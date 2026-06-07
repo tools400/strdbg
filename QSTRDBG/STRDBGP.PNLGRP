@@ -21,7 +21,7 @@
 .*=====================================================================*
 .*  History:                                                           *
 .*                                                                     *
-.*  Datum       Name          Änderung                                 *
+.*  Datum       Name          Ã„nderung                                 *
 .*  ----------  ------------  ---------------------------------------  *
 .*                                                                     *
 .*=====================================================================*
@@ -57,7 +57,7 @@
 .*:IMHELP name='STRDBG/WIDESCN   '.
 :EHELP.
 .*--------------------------------------------------------------------
-.* Hilfetext für den Befehl
+.* Hilfetext fÃ¼r den Befehl
 .*--------------------------------------------------------------------
 :HELP NAME='STRDBG'.
 Start Debug (STRDBG) - Help
@@ -113,7 +113,7 @@ authority to the program and *SERVICE special authority.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort PGM
+.* Hilfetext fÃ¼r SchlÃ¼sselwort PGM
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/PGM       '.
 Program (PGM) - Help
@@ -181,7 +181,7 @@ object.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort PGM
+.* Hilfetext fÃ¼r SchlÃ¼sselwort PGM
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/DFTPGM    '.
 Default program (DFTPGM) - Help
@@ -230,7 +230,7 @@ cannot be a default program for the OPM debug environment.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort MAXTRC
+.* Hilfetext fÃ¼r SchlÃ¼sselwort MAXTRC
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/MAXTRC    '.
 Maximum trace statements (MAXTRC) - Help
@@ -265,7 +265,7 @@ trace file.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort TRCFULL
+.* Hilfetext fÃ¼r SchlÃ¼sselwort TRCFULL
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/TRCFULL   '.
 Trace full (TRCFULL) - Help
@@ -299,7 +299,7 @@ and they are the most recently recorded statements.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort UPDPROD
+.* Hilfetext fÃ¼r SchlÃ¼sselwort UPDPROD
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/UPDPROD   '.
 Update production files (UPDPROD) - Help
@@ -332,7 +332,7 @@ is in debug mode.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort OPMSRC
+.* Hilfetext fÃ¼r SchlÃ¼sselwort OPMSRC
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/OPMSRC    '.
 OPM source level debug (OPMSRC) - Help
@@ -366,7 +366,7 @@ level debug.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort SRVPGM
+.* Hilfetext fÃ¼r SchlÃ¼sselwort SRVPGM
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/SRVPGM    '.
 Service program (SRVPGM) - Help
@@ -410,7 +410,7 @@ used.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort CLASS
+.* Hilfetext fÃ¼r SchlÃ¼sselwort CLASS
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/CLASS     '.
 Class file (CLASS) - Help
@@ -437,7 +437,7 @@ class files later.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort JOB
+.* Hilfetext fÃ¼r SchlÃ¼sselwort JOB
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/JOB       '.
 Job name (JOB) - Help
@@ -499,7 +499,7 @@ and :HP2.Name:EHP2. qualifier.
 :EHELP.
 .*
 .*--------------------------------------------------------------------
-.* Hilfetext für Schlüsselwort WIDESCN
+.* Hilfetext fÃ¼r SchlÃ¼sselwort WIDESCN
 .*--------------------------------------------------------------------
 :HELP name='STRDBG/WIDESCN   '.
 Allow wide screen (WIDESCN) - Help
