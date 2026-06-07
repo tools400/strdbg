@@ -1,6 +1,9 @@
-# SLCJOB - A Tools/400 Utility
+# STRDBG - A Tools/400 Utility
 
-SLCJOB is a utility for selecting jobs from a filtered list of jobs.
+STRDBG is utility for starting and ending the 5250 IBM debugger. The
+advantage of the utility over the IBM STRDBG command is, that it
+automatically starts a service job when the user wants to debug
+a different job.
 
 ## Dependencies
 
